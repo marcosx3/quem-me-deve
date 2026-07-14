@@ -38,9 +38,11 @@ class DevedorController extends Controller
 
     public function store(StoreDevedorRequest $request): RedirectResponse
     {
-        $this->devedores->createForUser($request->user(), $request->validated());
+        $devedor = $this->devedores->createForUser($request->user(), $request->validated());
 
-        return to_route('devedores.index')->with('success', 'Devedor cadastrado com sucesso.');
+        return to_route('devedores.index')
+            ->with('success', 'Devedor cadastrado com sucesso.')
+            ->with('devedorCriado', ['id' => $devedor->id, 'nome' => $devedor->nome]);
     }
 
     public function edit(Request $request, Devedor $devedor): Response

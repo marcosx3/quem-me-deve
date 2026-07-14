@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DevedorController;
+use App\Http\Controllers\DividaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,6 +17,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('devedores', DevedorController::class)
         ->except('show')
         ->parameters(['devedores' => 'devedor']);
+
+    Route::resource('dividas', DividaController::class)
+        ->except('show')
+        ->parameters(['dividas' => 'divida']);
 });
 
 require __DIR__.'/settings.php';

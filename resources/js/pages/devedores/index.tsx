@@ -15,6 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Devedores', href: '/devedores' 
 export default function DevedoresIndex({ devedores, filters }: { devedores: PaginatedData<Devedor>; filters: { q: string | null } }) {
     const { flash } = usePage<SharedData>().props;
     const [search, setSearch] = useState(filters.q ?? '');
+    const [devedorCriado, setDevedorCriado] = useState(flash.devedorCriado ?? null);
 
     const handleSearch = (e: FormEvent) => {
         e.preventDefault();
@@ -111,6 +112,23 @@ export default function DevedoresIndex({ devedores, filters }: { devedores: Pagi
                     </div>
                 )}
             </div>
+
+            <Dialog open={devedorCriado !== null} onOpenChange={(open) => !open && setDevedorCriado(null)}>
+                <DialogContent>
+                    <DialogTitle>Cadastrar uma dívida para {devedorCriado?.nome}?</DialogTitle>
+                    <DialogDescription>O devedor foi cadastrado com sucesso. Já quer aproveitar e registrar uma dívida para essa pessoa?</DialogDescription>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button variant="secondary" onClick={() => setDevedorCriado(null)}>
+                                Agora não
+                            </Button>
+                        </DialogClose>
+                        <Button asChild>
+                            <Link href={route('dividas.create', { devedor_id: devedorCriado?.id })}>Cadastrar dívida</Link>
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

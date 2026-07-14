@@ -25,7 +25,11 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
-    flash: { success?: string | null; error?: string | null };
+    flash: {
+        success?: string | null;
+        error?: string | null;
+        devedorCriado?: { id: number; nome: string } | null;
+    };
     [key: string]: unknown;
 }
 
@@ -49,6 +53,37 @@ export interface Devedor {
     observacoes: string | null;
     created_at: string;
     updated_at: string;
+}
+
+export type DividaStatus = 'aberta' | 'quitada';
+
+// Filtro de listagem: inclui 'vencida', que é derivado (aberta + parcela pendente com vencimento no passado),
+// não um valor armazenado na coluna `status`.
+export type DividaStatusFilter = DividaStatus | 'vencida';
+
+export interface Divida {
+    id: number;
+    devedor_id: number;
+    devedor: {
+        id: number;
+        nome: string;
+    };
+    descricao: string;
+    valor_total: string;
+    qtd_parcelas: number;
+    data_primeira_parcela: string;
+    status: DividaStatus;
+    vencida: boolean;
+    parcelas_count?: number;
+    parcelas_pagas_count?: number;
+    parcelas_vencidas_count?: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface DevedorOption {
+    id: number;
+    nome: string;
 }
 
 export interface PaginationLink {
