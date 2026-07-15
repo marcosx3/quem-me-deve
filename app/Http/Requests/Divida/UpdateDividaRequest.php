@@ -21,7 +21,6 @@ class UpdateDividaRequest extends FormRequest
                 Rule::exists('devedores', 'id')->where('user_id', $this->user()->id),
             ],
             'descricao' => ['required', 'string', 'max:255'],
-            'status' => ['required', Rule::in(['aberta', 'quitada'])],
         ];
     }
 }

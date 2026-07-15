@@ -37,12 +37,13 @@ class DividaService
     }
 
     /**
-     * Apenas descrição, devedor e status podem ser alterados depois de criada: valor_total,
-     * qtd_parcelas e data_primeira_parcela já determinaram o parcelamento gerado na criação.
+     * Apenas descrição e devedor podem ser alterados depois de criada: valor_total, qtd_parcelas
+     * e data_primeira_parcela já determinaram o parcelamento gerado na criação, e o status é
+     * derivado automaticamente das parcelas (ver ParcelaService::sincronizarStatusDivida).
      */
     public function updateForUser(Divida $divida, array $data): Divida
     {
-        $allowed = array_intersect_key($data, array_flip(['devedor_id', 'descricao', 'status']));
+        $allowed = array_intersect_key($data, array_flip(['devedor_id', 'descricao']));
 
         return $this->dividas->update($divida, $allowed);
     }

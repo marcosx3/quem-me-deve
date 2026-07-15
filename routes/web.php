@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DevedorController;
 use App\Http\Controllers\DividaController;
+use App\Http\Controllers\ParcelaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -21,6 +22,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('dividas', DividaController::class)
         ->except('show')
         ->parameters(['dividas' => 'divida']);
+
+    Route::patch('parcelas/{parcela}', [ParcelaController::class, 'update'])->name('parcelas.update');
 });
 
 require __DIR__.'/settings.php';

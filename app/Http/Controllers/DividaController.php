@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Divida\StoreDividaRequest;
 use App\Http\Requests\Divida\UpdateDividaRequest;
 use App\Http\Resources\DividaResource;
+use App\Http\Resources\ParcelaResource;
 use App\Models\Divida;
 use App\Services\DividaService;
 use Illuminate\Http\RedirectResponse;
@@ -54,6 +55,11 @@ class DividaController extends Controller
         return Inertia::render('dividas/edit', [
             'divida' => (new DividaResource($divida))->resolve(),
             'devedores' => $request->user()->devedores()->orderBy('nome')->get(['id', 'nome']),
+            'parcelas' => $divida->parcelas()
+                ->orderBy('numero')
+                ->get()
+                ->map(fn ($parcela) => (new ParcelaResource($parcela))->resolve())
+                ->all(),
         ]);
     }
 

@@ -49,9 +49,7 @@ plans 1───* users 1───* devedores 1───* dividas 1───* pa
 - **users** — autenticação. Note que a coluna de senha se chama `password_hash`, não `password` (ver [Autenticação](#autenticação)).
 - **devedores** — pessoas que devem dinheiro ao usuário. `slug` é único por usuário (`user_id` + `slug`), gerado automaticamente a partir do nome.
 - **dividas** — uma dívida de um devedor, com valor total e quantidade de parcelas. Status `aberta`/`quitada`. Ao criar uma dívida, as parcelas são **geradas automaticamente** (ver [Regra de negócio: geração de parcelas](#regra-de-negócio-geração-de-parcelas)).
-- **parcelas** — parcelas individuais de uma dívida, geradas pelo `DividaService`. Status `pendente`/`paga`.
-
-`parcelas` já tem migration e Model prontos, mas **ainda não tem CRUD/tela própria** — hoje só é possível ver o progresso (quantas pagas/total) na listagem de dívidas (ver [Status do projeto](#status-do-projeto)).
+- **parcelas** — parcelas individuais de uma dívida, geradas pelo `DividaService` na criação. Status `pendente`/`paga`, com `pago_em` registrando a data da baixa. Cada parcela pode ser marcada como paga ("dar baixa") ou desfeita individualmente na tela de edição da dívida — não são apenas um número agregado (ver [Dar baixa em parcelas](#dar-baixa-em-parcelas)).
 
 ## Autenticação
 
@@ -78,7 +76,7 @@ Assim, `Auth::attempt()`, `Hash::make()` nos controllers e o cast `'hashed'` con
 
 ## Arquitetura
 
-Os CRUDs de **Devedores** e **Dívidas** seguem o mesmo padrão: Repository Pattern + Service Layer + Policies. É o padrão a replicar quando o CRUD de Parcelas for implementado.
+Os CRUDs de **Devedores** e **Dívidas** seguem o mesmo padrão: Repository Pattern + Service Layer + Policies. **Parcelas** segue a mesma estrutura de camadas (Service/Repository/Policy/Resource), mas não é um CRUD tradicional — parcelas são geradas automaticamente com a dívida e nunca criadas/excluídas manualmente, então só existe a ação de trocar o status (`ParcelaController@update`, ver [Dar baixa em parcelas](#dar-baixa-em-parcelas)).
 
 ```
 Controller  → só orquestra HTTP (chama Service, autoriza via Policy, retorna Inertia::render)
@@ -94,35 +92,38 @@ app/
 ├── Http/
 │   ├── Controllers/
 │   │   ├── DevedorController.php               # fino, sem lógica de negócio
-│   │   └── DividaController.php
+│   │   ├── DividaController.php
+│   │   └── ParcelaController.php                # só a ação update (trocar status)
 │   ├── Requests/
 │   │   ├── Devedor/                             # StoreDevedorRequest, UpdateDevedorRequest
-│   │   └── Divida/                              # StoreDividaRequest, UpdateDividaRequest
+│   │   ├── Divida/                              # StoreDividaRequest, UpdateDividaRequest
+│   │   └── Parcela/                             # UpdateParcelaStatusRequest
 │   └── Resources/
 │       ├── DevedorResource.php
-│       └── DividaResource.php                   # inclui devedor{id,nome} e contagem de parcelas
+│       ├── DividaResource.php                   # inclui devedor{id,nome}, contagens e `vencida`
+│       └── ParcelaResource.php                  # inclui `vencida` (pendente + vencimento no passado)
 ├── Services/
 │   ├── DevedorService.php                       # slug único + limite do plano
-│   └── DividaService.php                        # gera as parcelas dentro de uma transaction
+│   ├── DividaService.php                        # gera as parcelas dentro de uma transaction
+│   └── ParcelaService.php                       # dar baixa/estornar + sincroniza status da dívida
 ├── Repositories/
 │   ├── Contracts/
 │   │   ├── RepositoryInterface.php              # contrato genérico (find/create/update/delete)
 │   │   ├── DevedorRepositoryInterface.php        # + paginateForUser, slugExistsForUser...
-│   │   ├── DividaRepositoryInterface.php         # + paginateForUser (com filtro de status)
-│   │   └── ParcelaRepositoryInterface.php        # + createMany (bulk insert)
+│   │   ├── DividaRepositoryInterface.php         # + paginateForUser (com filtro de status/vencida)
+│   │   └── ParcelaRepositoryInterface.php        # + createMany (bulk insert); update vem do base
 │   ├── BaseRepository.php                        # implementação genérica reaproveitável
 │   ├── EloquentDevedorRepository.php
 │   ├── EloquentDividaRepository.php
-│   └── EloquentParcelaRepository.php             # só o necessário p/ DividaService gerar parcelas
+│   └── EloquentParcelaRepository.php
 ├── Policies/
 │   ├── DevedorPolicy.php                        # view/update/delete = dono do registro
-│   └── DividaPolicy.php
+│   ├── DividaPolicy.php
+│   └── ParcelaPolicy.php                        # dono = dono da dívida pai (parcela não tem user_id)
 └── Providers/RepositoryServiceProvider.php       # liga interface → implementação (DIP)
 ```
 
-Por que interface + binding em vez de usar o Eloquent direto no Service: troca de implementação (ex.: cache, outra fonte de dados, testes com fake repository) sem tocar em Service/Controller. `BaseRepository`/`RepositoryInterface` existem para serem reaproveitados pelo próximo CRUD (Parcela) sem duplicar `create`/`update`/`delete`.
-
-`ParcelaRepositoryInterface` existe hoje só com o necessário para o `DividaService` inserir as parcelas em lote — não há Controller/Policy/tela de Parcela ainda porque não há CRUD de Parcela implementado.
+Por que interface + binding em vez de usar o Eloquent direto no Service: troca de implementação (ex.: cache, outra fonte de dados, testes com fake repository) sem tocar em Service/Controller. `BaseRepository`/`RepositoryInterface` já pagaram seu preço aqui: `ParcelaService` dá baixa/estorna usando só o `update()` genérico herdado do `BaseRepository`, sem precisar de um método novo no repository.
 
 ### Flash estruturado (não só mensagens de texto)
 
@@ -144,8 +145,17 @@ Ao criar uma dívida, `DividaService::createForUser()` cria o registro e gera as
 
 - **Divisão do valor**: feita em centavos (inteiros) para evitar erro de ponto flutuante. `valor_total` é dividido por `qtd_parcelas`; o resto da divisão é distribuído 1 centavo a mais nas primeiras parcelas, garantindo que a soma das parcelas bata exatamente com `valor_total` (ex.: R$ 1.000,00 em 3x → R$ 333,34 + R$ 333,33 + R$ 333,33).
 - **Vencimentos**: mensais a partir de `data_primeira_parcela`, usando `addMonthsNoOverflow` (evita o bug clássico de "31 de janeiro + 1 mês = 3 de março").
-- **Imutabilidade**: depois de criada, uma dívida só permite editar `devedor_id`, `descricao` e `status` — `valor_total`, `qtd_parcelas` e `data_primeira_parcela` não podem mudar, porque as parcelas já foram geradas a partir desses valores. Isso é reforçado tanto no `UpdateDividaRequest` (nem valida esses campos) quanto no `DividaService::updateForUser()` (filtra os campos aceitos).
-- **Status manual**: como ainda não existe CRUD de Parcela para marcar parcelas individuais como pagas, o campo `status` da dívida (`aberta`/`quitada`) é editável manualmente na tela de edição como forma provisória de sinalizar quitação.
+- **Imutabilidade**: depois de criada, uma dívida só permite editar `devedor_id` e `descricao` — `valor_total`, `qtd_parcelas` e `data_primeira_parcela` não podem mudar, porque as parcelas já foram geradas a partir desses valores, e `status` não é mais editável diretamente (ver abaixo). Isso é reforçado tanto no `UpdateDividaRequest` (nem valida esses campos) quanto no `DividaService::updateForUser()` (filtra os campos aceitos).
+
+### Dar baixa em parcelas
+
+O campo `dividas.status` **não é editado manualmente** — é derivado de suas parcelas. Na tela de edição de uma dívida ([`dividas/edit.tsx`](resources/js/pages/dividas/edit.tsx)), cada parcela tem um botão "Marcar como paga" / "Desfazer baixa" que dispara `PATCH /parcelas/{parcela}`:
+
+1. `ParcelaController::update()` autoriza via `ParcelaPolicy` (dono é o dono da *dívida*, já que `parcelas` não tem `user_id` próprio) e delega para `ParcelaService::marcarPaga()` ou `marcarPendente()`.
+2. Cada uma dessas ações roda numa `DB::transaction()`: atualiza a parcela (`status` + `pago_em`) e chama `sincronizarStatusDivida()`, que reconta as parcelas da dívida e define `status = 'quitada'` só se **todas** estiverem pagas — senão volta para `'aberta'`.
+3. O controller devolve `back()`, e o Inertia recarrega a página de edição com a dívida e as parcelas já atualizadas.
+
+Por causa disso, `UpdateDividaRequest` não aceita mais `status` no payload — só `ParcelaService` pode mudar o status de uma dívida, e sempre como consequência de uma parcela sendo paga ou estornada, nunca diretamente.
 
 ### "Vencida" é um status derivado, não uma coluna
 
@@ -193,10 +203,10 @@ Tema roxo/branco configurado via variáveis CSS em [`resources/css/app.css`](res
 - Autenticação completa (login, registro, esqueci senha, configurações de perfil)
 - Landing page (`/`) com seção de planos
 - CRUD completo de Devedores (listar com busca/paginação, criar, editar, excluir), com popup pós-cadastro oferecendo criar uma dívida na hora
-- CRUD completo de Dívidas (listar com busca/filtro de status/paginação, criar com geração automática de parcelas, editar descrição/devedor/status, excluir com cascade das parcelas)
+- CRUD completo de Dívidas (listar com busca/filtro de status incluindo "vencida"/paginação, criar com geração automática de parcelas, editar descrição/devedor, excluir com cascade das parcelas)
+- Parcelas: baixa/estorno individual na tela de edição da dívida, com o status da dívida sincronizado automaticamente (não é um CRUD tradicional — parcelas não são criadas/excluídas manualmente, só geradas com a dívida)
 
 **Não implementado ainda:**
-- CRUD de Parcelas — hoje as parcelas só existem "por baixo" (geradas na criação da dívida); não há tela para listar/marcar parcelas individuais como pagas (`app/Models/Parcela.php`, migration e `ParcelaRepositoryInterface` mínimo já existem)
 - Cobrança/checkout dos planos pagos
 - Dashboard com dados reais (hoje é o placeholder do starter kit)
 
@@ -207,5 +217,6 @@ Sem browser automatizado disponível no ambiente de desenvolvimento; toda a vali
 - CRUD completo de dívida: criação gera as parcelas certas (valor dividido exatamente, vencimentos mensais corretos — conferido direto no banco), edição, exclusão em cascata das parcelas, e validação de que não é possível criar uma dívida usando o `devedor_id` de outro usuário (422).
 - Popup pós-cadastro de devedor: `flash.devedorCriado` chega certo na primeira requisição após o cadastro e some na seguinte (confirmado com duas requisições sucessivas), e a pré-seleção do devedor em `/dividas/create?devedor_id=X` funciona.
 - Filtro `status=vencida`: criada uma dívida com `data_primeira_parcela` no passado e outra no futuro — o filtro trouxe só a vencida, `status=aberta` trouxe as duas (com o campo `vencida` certo em cada uma), e sem filtro nenhum a listagem também mostrou o campo `vencida` corretamente para cada caso.
+- Dar baixa em parcelas: dívida de 1 parcela → dar baixa virou a dívida `quitada` automaticamente, estornar voltou para `aberta`; dívida de 3 parcelas → pagar 2 de 3 manteve `aberta`, só quitou ao pagar a última. Confirmado 403 ao tentar dar baixa numa parcela de dívida de outro usuário.
 
 Recomenda-se validação manual no navegador antes de qualquer deploy.

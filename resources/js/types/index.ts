@@ -86,6 +86,18 @@ export interface DevedorOption {
     nome: string;
 }
 
+export type ParcelaStatus = 'pendente' | 'paga';
+
+export interface Parcela {
+    id: number;
+    numero: number;
+    valor: string;
+    vencimento: string;
+    status: ParcelaStatus;
+    pago_em: string | null;
+    vencida: boolean;
+}
+
 export interface PaginationLink {
     url: string | null;
     label: string;
