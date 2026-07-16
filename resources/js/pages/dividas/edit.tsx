@@ -2,6 +2,7 @@ import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,7 +11,8 @@ import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { type BreadcrumbItem, type DevedorOption, type Divida, type Parcela } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { FormEvent } from 'react';
+import { Pencil } from 'lucide-react';
+import { FormEvent, useState } from 'react';
 
 export default function EditDivida({ divida, devedores, parcelas }: { divida: Divida; devedores: DevedorOption[]; parcelas: Parcela[] }) {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -121,9 +123,12 @@ export default function EditDivida({ divida, devedores, parcelas }: { divida: Di
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm" onClick={() => alternarStatusParcela(parcela)}>
-                                                {parcela.status === 'paga' ? 'Desfazer baixa' : 'Marcar como paga'}
-                                            </Button>
+                                            <div className="flex justify-end gap-1">
+                                                <EditarVencimentoDialog parcela={parcela} />
+                                                <Button variant="ghost" size="sm" onClick={() => alternarStatusParcela(parcela)}>
+                                                    {parcela.status === 'paga' ? 'Desfazer baixa' : 'Marcar como paga'}
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -133,5 +138,60 @@ export default function EditDivida({ divida, devedores, parcelas }: { divida: Di
                 </div>
             </div>
         </AppLayout>
+    );
+}
+
+function EditarVencimentoDialog({ parcela }: { parcela: Parcela }) {
+    const [open, setOpen] = useState(false);
+    const { data, setData, patch, processing, errors, reset } = useForm({ vencimento: parcela.vencimento });
+
+    const submit = (e: FormEvent) => {
+        e.preventDefault();
+        patch(route('parcelas.vencimento.update', parcela.id), {
+            preserveScroll: true,
+            onSuccess: () => setOpen(false),
+        });
+    };
+
+    return (
+        <Dialog
+            open={open}
+            onOpenChange={(value) => {
+                setOpen(value);
+                if (!value) reset();
+            }}
+        >
+            <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Editar vencimento">
+                    <Pencil className="size-4" />
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogTitle>Editar vencimento da parcela {parcela.numero}</DialogTitle>
+                <DialogDescription>Ajuste a data caso essa parcela tenha sido renegociada.</DialogDescription>
+                <form onSubmit={submit} className="space-y-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor={`vencimento-${parcela.id}`}>Vencimento</Label>
+                        <Input
+                            id={`vencimento-${parcela.id}`}
+                            type="date"
+                            value={data.vencimento}
+                            onChange={(e) => setData('vencimento', e.target.value)}
+                        />
+                        <InputError message={errors.vencimento} />
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="secondary">
+                                Cancelar
+                            </Button>
+                        </DialogClose>
+                        <Button type="submit" disabled={processing}>
+                            Salvar
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 }

@@ -21,6 +21,23 @@ O frontend não é uma SPA consumindo API — é Inertia.js: cada rota do Larave
 
 Pré-requisito: Docker Desktop.
 
+Primeiro, crie `.env.docker` na raiz do projeto (não é versionado — contém os segredos reais):
+
+```bash
+cat > .env.docker <<'EOF'
+APP_KEY=base64:GERE_UMA_NOVA_AQUI
+DB_DATABASE=quem
+DB_USERNAME=quem
+DB_PASSWORD=escolha-uma-senha
+MYSQL_DATABASE=quem
+MYSQL_USER=quem
+MYSQL_PASSWORD=escolha-uma-senha
+MYSQL_ROOT_PASSWORD=escolha-uma-senha
+EOF
+```
+
+Para gerar uma `APP_KEY` nova: `openssl rand -base64 32` (prefixe o resultado com `base64:`). `DB_PASSWORD` e `MYSQL_PASSWORD` devem ter o mesmo valor.
+
 ```bash
 docker compose up -d --build
 ```
@@ -33,7 +50,7 @@ Usuário de teste (criado pelo seeder): `test@example.com` / `password`.
 
 ### Variáveis de ambiente
 
-Definidas diretamente no `docker-compose.yml` (serviço `app`). Para rodar fora do Docker, copie `.env.example` para `.env` e ajuste `DB_HOST`/`DB_PORT` para seu MySQL local.
+Segredos (`APP_KEY`, senhas de banco) vêm de `.env.docker` (gitignorado) via `env_file:` no `docker-compose.yml`. O resto (nome do app, timezone, drivers) fica direto no `docker-compose.yml`, que não tem nada sensível. Para rodar fora do Docker, copie `.env.example` para `.env` e ajuste `DB_HOST`/`DB_PORT`/`DB_PASSWORD` para seu MySQL local.
 
 ## Modelo de dados
 
@@ -93,11 +110,12 @@ app/
 │   ├── Controllers/
 │   │   ├── DevedorController.php               # fino, sem lógica de negócio
 │   │   ├── DividaController.php
-│   │   └── ParcelaController.php                # só a ação update (trocar status)
+│   │   ├── ParcelaController.php                # update (status) e updateVencimento
+│   │   └── DashboardController.php              # só chama DashboardService, sem Policy/Request (leitura própria)
 │   ├── Requests/
 │   │   ├── Devedor/                             # StoreDevedorRequest, UpdateDevedorRequest
 │   │   ├── Divida/                              # StoreDividaRequest, UpdateDividaRequest
-│   │   └── Parcela/                             # UpdateParcelaStatusRequest
+│   │   └── Parcela/                             # UpdateParcelaStatusRequest, UpdateParcelaVencimentoRequest
 │   └── Resources/
 │       ├── DevedorResource.php
 │       ├── DividaResource.php                   # inclui devedor{id,nome}, contagens e `vencida`
@@ -105,13 +123,14 @@ app/
 ├── Services/
 │   ├── DevedorService.php                       # slug único + limite do plano
 │   ├── DividaService.php                        # gera as parcelas dentro de uma transaction
-│   └── ParcelaService.php                       # dar baixa/estornar + sincroniza status da dívida
+│   ├── ParcelaService.php                       # dar baixa/estornar + sincroniza status da dívida
+│   └── DashboardService.php                     # só agrega/formata; sem regra de negócio própria
 ├── Repositories/
 │   ├── Contracts/
 │   │   ├── RepositoryInterface.php              # contrato genérico (find/create/update/delete)
 │   │   ├── DevedorRepositoryInterface.php        # + paginateForUser, slugExistsForUser...
 │   │   ├── DividaRepositoryInterface.php         # + paginateForUser (com filtro de status/vencida)
-│   │   └── ParcelaRepositoryInterface.php        # + createMany (bulk insert); update vem do base
+│   │   └── ParcelaRepositoryInterface.php        # + createMany, totaisForUser, proximasForUser, vencidasForUser
 │   ├── BaseRepository.php                        # implementação genérica reaproveitável
 │   ├── EloquentDevedorRepository.php
 │   ├── EloquentDividaRepository.php
@@ -145,7 +164,7 @@ Ao criar uma dívida, `DividaService::createForUser()` cria o registro e gera as
 
 - **Divisão do valor**: feita em centavos (inteiros) para evitar erro de ponto flutuante. `valor_total` é dividido por `qtd_parcelas`; o resto da divisão é distribuído 1 centavo a mais nas primeiras parcelas, garantindo que a soma das parcelas bata exatamente com `valor_total` (ex.: R$ 1.000,00 em 3x → R$ 333,34 + R$ 333,33 + R$ 333,33).
 - **Vencimentos**: mensais a partir de `data_primeira_parcela`, usando `addMonthsNoOverflow` (evita o bug clássico de "31 de janeiro + 1 mês = 3 de março").
-- **Imutabilidade**: depois de criada, uma dívida só permite editar `devedor_id` e `descricao` — `valor_total`, `qtd_parcelas` e `data_primeira_parcela` não podem mudar, porque as parcelas já foram geradas a partir desses valores, e `status` não é mais editável diretamente (ver abaixo). Isso é reforçado tanto no `UpdateDividaRequest` (nem valida esses campos) quanto no `DividaService::updateForUser()` (filtra os campos aceitos).
+- **Imutabilidade**: depois de criada, uma dívida só permite editar `devedor_id` e `descricao` — `valor_total`, `qtd_parcelas` e `data_primeira_parcela` (da dívida) não podem mudar, porque as parcelas já foram geradas a partir desses valores, e `status` não é mais editável diretamente (ver abaixo). Isso é reforçado tanto no `UpdateDividaRequest` (nem valida esses campos) quanto no `DividaService::updateForUser()` (filtra os campos aceitos). Isso **não** se aplica ao vencimento de cada parcela individual, que pode ser ajustado depois (ver [Editar vencimento de uma parcela](#editar-vencimento-de-uma-parcela)) — é uma renegociação pontual, não uma alteração do parcelamento original.
 
 ### Dar baixa em parcelas
 
@@ -156,6 +175,14 @@ O campo `dividas.status` **não é editado manualmente** — é derivado de suas
 3. O controller devolve `back()`, e o Inertia recarrega a página de edição com a dívida e as parcelas já atualizadas.
 
 Por causa disso, `UpdateDividaRequest` não aceita mais `status` no payload — só `ParcelaService` pode mudar o status de uma dívida, e sempre como consequência de uma parcela sendo paga ou estornada, nunca diretamente.
+
+### Editar vencimento de uma parcela
+
+Cada parcela também tem um botão de editar (ícone de lápis) ao lado das ações de baixa, para ajustar só a data de vencimento — útil quando uma parcela específica foi renegociada, sem mexer no parcelamento original da dívida:
+
+- Rota dedicada `PATCH /parcelas/{parcela}/vencimento` → `ParcelaController::updateVencimento()` → `ParcelaService::atualizarVencimento()`, separada da rota de status (`PATCH /parcelas/{parcela}`) porque são ações independentes com validações diferentes (`UpdateParcelaVencimentoRequest` só valida `date`, sem tocar em `status`/`pago_em`).
+- Não recalcula nada além da própria parcela — o campo `vencida` de cada parcela (e da dívida) é sempre calculado no momento da leitura, então uma parcela editada para o futuro deixa de aparecer como vencida automaticamente, sem job ou trigger.
+- Mesma autorização das outras ações de parcela: `ParcelaPolicy` checa o dono da dívida pai.
 
 ### "Vencida" é um status derivado, não uma coluna
 
@@ -180,6 +207,15 @@ O pluralizador/singularizador do Laravel (Doctrine Inflector) assume inglês. Is
 - `limite_devedores = NULL` significa ilimitado (caso do plano Pro hoje).
 - **Não há cobrança real implementada.** Os valores de preço na landing page ([`welcome.tsx`](resources/js/pages/welcome.tsx)) são de exemplo e estão isolados num array no topo do arquivo — combinar com os valores reais em `PlanSeeder` quando o modelo de cobrança for definido.
 
+## Dashboard
+
+`/dashboard` ([`DashboardController`](app/Http/Controllers/DashboardController.php) → [`DashboardService`](app/Services/DashboardService.php)) mostra um resumo real do usuário logado, sem placeholder:
+
+- **Cards**: total a receber (soma de parcelas `pendente`), total recebido (soma de parcelas `paga`), devedores usados/limite do plano (com aviso quando o limite é atingido), e quantidade de parcelas vencidas.
+- **Parcelas vencidas** e **Próximos vencimentos**: duas listas lado a lado, cada item leva direto para a tela de edição da dívida correspondente (onde dá pra dar baixa). "Próximos vencimentos" só considera parcelas `pendente` com vencimento a partir de hoje — uma parcela vencida não aparece duplicada nas duas listas.
+
+Toda a agregação vive em `EloquentParcelaRepository` (`totaisForUser`, `proximasForUser`, `vencidasForUser`), escopada por usuário via `whereHas('divida', ...)` já que `parcelas` não guarda `user_id` diretamente. `DashboardService` só orquestra essas chamadas e formata a resposta — sem lógica de negócio própria, é puramente leitura/apresentação.
+
 ## Fluxos de UX
 
 ### Popup "cadastrar dívida" após criar um devedor
@@ -197,6 +233,19 @@ Como o popup depende de estado local inicializado a partir da prop de flash (nã
 
 Tema roxo/branco configurado via variáveis CSS em [`resources/css/app.css`](resources/css/app.css) (`--primary`, `--ring`, `--sidebar-primary` etc.), aplicado automaticamente a todos os componentes shadcn/ui do projeto. Tema claro é o padrão (`useAppearance` em [`use-appearance.tsx`](resources/js/hooks/use-appearance.tsx)); modo escuro é opt-in via o seletor no header.
 
+## Segurança
+
+Auditoria feita cobrindo autenticação, autorização (IDOR), validação, queries e configuração do Docker. Achados corrigidos:
+
+- **Segredos commitados no `docker-compose.yml`**: a `APP_KEY` e a senha do MySQL estavam hardcoded no arquivo versionado. Movidos para `.env.docker` (gitignorado, ver [Como rodar o projeto](#como-rodar-o-projeto)), com `APP_KEY`/senha **rotacionados** — os valores antigos não são mais válidos. ⚠️ A chave antiga já tinha sido enviada para o repositório remoto (`origin/main`) antes desta correção; rotacionar impede uso futuro dela, mas não a remove do histórico do git. Se o repositório for público, considere isso comprometido — reescrever histórico (`git filter-repo`/BFG) é a única forma de remover de fato.
+- **Porta do MySQL exposta em todas as interfaces**: `3306:3306` virou `127.0.0.1:3306:3306` — o banco só é alcançável a partir da própria máquina, não da rede.
+- **Sem rate limiting em registro/recuperação de senha**: `throttle:6,1` adicionado em `POST /register`, `POST /forgot-password` e `POST /reset-password` (o `/login` já tinha limitador próprio via `LoginRequest`). Testado: a 7ª tentativa em 1 minuto retorna `429`.
+- **`user_id` mass-assignable em `Devedor`/`Divida`**: removido do `$fillable` dos dois models. `EloquentDevedorRepository`/`EloquentDividaRepository` agora sobrescrevem `create()` usando `forceFill()` — único caminho de escrita, sempre chamado pelos Services com o `user_id` do usuário autenticado, nunca com dado bruto de requisição. Fecha a possibilidade de um futuro `Model::create($request->all())` virar um IDOR de escalação.
+
+**Verificado e já estava correto** (sem mudança necessária): toda ação de editar/excluir passa por `Gate::authorize` com Policy checando posse (testado com dois usuários ao longo do desenvolvimento); `devedor_id` na criação de dívida é validado contra o dono via `Rule::exists()->where('user_id', ...)`; nenhuma query SQL raw/concatenada em lugar nenhum; `dangerouslySetInnerHTML` só é usado com labels de paginação do Laravel, nunca com dado de usuário; CSRF e hash de senha via bcrypt já eram o padrão do Laravel.
+
+**Ainda em aberto / decisão consciente**: `docker-compose.yml` mantém `APP_DEBUG=true` (stack trace completo em erros) — de propósito, para facilitar debug local; documentado no topo do arquivo que esse compose é **só para desenvolvimento**, não para produção. `SESSION_SECURE_COOKIE` não está setado (correto para HTTP puro em localhost; precisa ser `true` + HTTPS antes de qualquer deploy real).
+
 ## Status do projeto
 
 **Pronto:**
@@ -204,11 +253,11 @@ Tema roxo/branco configurado via variáveis CSS em [`resources/css/app.css`](res
 - Landing page (`/`) com seção de planos
 - CRUD completo de Devedores (listar com busca/paginação, criar, editar, excluir), com popup pós-cadastro oferecendo criar uma dívida na hora
 - CRUD completo de Dívidas (listar com busca/filtro de status incluindo "vencida"/paginação, criar com geração automática de parcelas, editar descrição/devedor, excluir com cascade das parcelas)
-- Parcelas: baixa/estorno individual na tela de edição da dívida, com o status da dívida sincronizado automaticamente (não é um CRUD tradicional — parcelas não são criadas/excluídas manualmente, só geradas com a dívida)
+- Parcelas: baixa/estorno individual e edição de vencimento na tela de edição da dívida, com o status da dívida sincronizado automaticamente (não é um CRUD tradicional — parcelas não são criadas/excluídas manualmente, só geradas com a dívida)
+- Dashboard (`/dashboard`) com dados reais do usuário logado (ver [Dashboard](#dashboard))
 
 **Não implementado ainda:**
 - Cobrança/checkout dos planos pagos
-- Dashboard com dados reais (hoje é o placeholder do starter kit)
 
 ## Testes manuais realizados
 
@@ -218,5 +267,7 @@ Sem browser automatizado disponível no ambiente de desenvolvimento; toda a vali
 - Popup pós-cadastro de devedor: `flash.devedorCriado` chega certo na primeira requisição após o cadastro e some na seguinte (confirmado com duas requisições sucessivas), e a pré-seleção do devedor em `/dividas/create?devedor_id=X` funciona.
 - Filtro `status=vencida`: criada uma dívida com `data_primeira_parcela` no passado e outra no futuro — o filtro trouxe só a vencida, `status=aberta` trouxe as duas (com o campo `vencida` certo em cada uma), e sem filtro nenhum a listagem também mostrou o campo `vencida` corretamente para cada caso.
 - Dar baixa em parcelas: dívida de 1 parcela → dar baixa virou a dívida `quitada` automaticamente, estornar voltou para `aberta`; dívida de 3 parcelas → pagar 2 de 3 manteve `aberta`, só quitou ao pagar a última. Confirmado 403 ao tentar dar baixa numa parcela de dívida de outro usuário.
+- Editar vencimento de parcela: `PATCH /parcelas/{id}/vencimento` persistiu a nova data corretamente, rejeitou data inválida (422), e bloqueou tentativa de outro usuário editar parcela alheia (403, com sessão nova — não confundir com um 419 de CSRF por reaproveitar cookie de sessão expirada de outro teste).
+- Dashboard: os totais retornados (`a_receber`, `recebido`, `vencidas_count`) foram conferidos contra `SUM`/`COUNT` direto no banco via SQL e bateram exatamente; "próximos vencimentos" veio ordenado por vencimento e não repetiu a parcela que já aparecia em "vencidas".
 
 Recomenda-se validação manual no navegador antes de qualquer deploy.

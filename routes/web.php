@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DevedorController;
 use App\Http\Controllers\DividaController;
 use App\Http\Controllers\ParcelaController;
@@ -11,9 +12,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('devedores', DevedorController::class)
         ->except('show')
@@ -24,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
         ->parameters(['dividas' => 'divida']);
 
     Route::patch('parcelas/{parcela}', [ParcelaController::class, 'update'])->name('parcelas.update');
+    Route::patch('parcelas/{parcela}/vencimento', [ParcelaController::class, 'updateVencimento'])->name('parcelas.vencimento.update');
 });
 
 require __DIR__.'/settings.php';

@@ -11,8 +11,11 @@ class Divida extends Model
 {
     use HasFactory;
 
+    /**
+     * `user_id` fica de fora de propósito: nunca deve ser preenchido a partir de dados de
+     * requisição. Quem cria uma Divida é o EloquentDividaRepository, via forceFill.
+     */
     protected $fillable = [
-        'user_id',
         'devedor_id',
         'descricao',
         'valor_total',

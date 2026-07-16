@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Parcela\UpdateParcelaStatusRequest;
+use App\Http\Requests\Parcela\UpdateParcelaVencimentoRequest;
 use App\Models\Parcela;
 use App\Services\ParcelaService;
 use Illuminate\Http\RedirectResponse;
@@ -26,5 +27,14 @@ class ParcelaController extends Controller
             'success',
             $parcela->status === 'paga' ? 'Parcela marcada como paga.' : 'Baixa da parcela desfeita.'
         );
+    }
+
+    public function updateVencimento(UpdateParcelaVencimentoRequest $request, Parcela $parcela): RedirectResponse
+    {
+        Gate::authorize('update', $parcela);
+
+        $this->parcelas->atualizarVencimento($parcela, $request->validated('vencimento'));
+
+        return back()->with('success', 'Vencimento da parcela atualizado.');
     }
 }

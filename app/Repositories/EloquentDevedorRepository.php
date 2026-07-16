@@ -5,12 +5,27 @@ namespace App\Repositories;
 use App\Models\Devedor;
 use App\Repositories\Contracts\DevedorRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
 
 class EloquentDevedorRepository extends BaseRepository implements DevedorRepositoryInterface
 {
     public function __construct(Devedor $model)
     {
         parent::__construct($model);
+    }
+
+    /**
+     * `user_id` não está em $fillable (de propósito), então usamos forceFill aqui: este é o
+     * único caminho confiável de escrita, sempre chamado pelo DevedorService com o user_id do
+     * usuário autenticado — nunca com dado bruto de requisição.
+     */
+    public function create(array $attributes): Model
+    {
+        $devedor = $this->model->newInstance();
+        $devedor->forceFill($attributes);
+        $devedor->save();
+
+        return $devedor;
     }
 
     public function paginateForUser(int $userId, ?string $search, int $perPage = 10): LengthAwarePaginator

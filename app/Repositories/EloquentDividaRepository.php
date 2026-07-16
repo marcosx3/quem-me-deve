@@ -6,12 +6,27 @@ use App\Models\Divida;
 use App\Repositories\Contracts\DividaRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class EloquentDividaRepository extends BaseRepository implements DividaRepositoryInterface
 {
     public function __construct(Divida $model)
     {
         parent::__construct($model);
+    }
+
+    /**
+     * `user_id` não está em $fillable (de propósito), então usamos forceFill aqui: este é o
+     * único caminho confiável de escrita, sempre chamado pelo DividaService com o user_id do
+     * usuário autenticado — nunca com dado bruto de requisição.
+     */
+    public function create(array $attributes): Model
+    {
+        $divida = $this->model->newInstance();
+        $divida->forceFill($attributes);
+        $divida->save();
+
+        return $divida;
     }
 
     public function paginateForUser(int $userId, ?string $search, ?string $status, int $perPage = 10): LengthAwarePaginator

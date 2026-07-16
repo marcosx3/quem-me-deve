@@ -98,6 +98,31 @@ export interface Parcela {
     vencida: boolean;
 }
 
+export interface ParcelaResumo {
+    id: number;
+    divida_id: number;
+    numero: number;
+    valor: string;
+    vencimento: string;
+    devedor_nome: string;
+    descricao: string;
+}
+
+export interface DashboardResumo {
+    devedoresCount: number;
+    plano: {
+        nome: string | null;
+        limiteDevedores: number | null;
+    };
+    totais: {
+        a_receber: string;
+        recebido: string;
+        vencidas_count: number;
+    };
+    proximasParcelas: ParcelaResumo[];
+    parcelasVencidas: ParcelaResumo[];
+}
+
 export interface PaginationLink {
     url: string | null;
     label: string;

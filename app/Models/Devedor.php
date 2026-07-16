@@ -13,8 +13,11 @@ class Devedor extends Model
 
     protected $table = 'devedores';
 
+    /**
+     * `user_id` fica de fora de propósito: nunca deve ser preenchido a partir de dados de
+     * requisição. Quem cria um Devedor é o EloquentDevedorRepository, via forceFill.
+     */
     protected $fillable = [
-        'user_id',
         'nome',
         'slug',
         'telefone',

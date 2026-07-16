@@ -44,6 +44,11 @@ class ParcelaService
         });
     }
 
+    public function atualizarVencimento(Parcela $parcela, string $vencimento): Parcela
+    {
+        return $this->parcelas->update($parcela, ['vencimento' => $vencimento]);
+    }
+
     /**
      * O status da dívida é derivado das parcelas: só é "quitada" quando todas estiverem pagas.
      */
