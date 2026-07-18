@@ -64,4 +64,9 @@ class EloquentDividaRepository extends BaseRepository implements DividaRepositor
             ->where('user_id', $userId)
             ->find($id);
     }
+
+    public function countForUser(int $userId): int
+    {
+        return $this->model->newQuery()->where('user_id', $userId)->count();
+    }
 }

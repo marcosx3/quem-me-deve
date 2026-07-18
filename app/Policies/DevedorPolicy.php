@@ -16,9 +16,4 @@ class DevedorPolicy
     {
         return $user->id === $devedor->user_id;
     }
-
-    public function delete(User $user, Devedor $devedor): bool
-    {
-        return $user->id === $devedor->user_id;
-    }
 }

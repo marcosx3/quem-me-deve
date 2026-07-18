@@ -14,8 +14,10 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // 'destroy' fica de fora de propósito: devedor não pode ser excluído, senão dá pra burlar
+    // o limite de devedores do plano excluindo e recriando.
     Route::resource('devedores', DevedorController::class)
-        ->except('show')
+        ->except(['show', 'destroy'])
         ->parameters(['devedores' => 'devedor']);
 
     Route::resource('dividas', DividaController::class)

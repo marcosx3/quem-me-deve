@@ -202,16 +202,23 @@ O pluralizador/singularizador do Laravel (Doctrine Inflector) assume inglês. Is
 
 ## Planos e regras de negócio
 
-- Todo usuário novo entra no plano `gratuito` (`plan_id` default 1 no banco).
-- O limite de devedores do plano (`plans.limite_devedores`) é aplicado no [`DevedorService`](app/Services/DevedorService.php): ao tentar cadastrar um devedor além do limite, é lançada uma `ValidationException` — o formulário do frontend recebe o erro normalmente, sem página de erro.
-- `limite_devedores = NULL` significa ilimitado (caso do plano Pro hoje).
-- **Não há cobrança real implementada.** Os valores de preço na landing page ([`welcome.tsx`](resources/js/pages/welcome.tsx)) são de exemplo e estão isolados num array no topo do arquivo — combinar com os valores reais em `PlanSeeder` quando o modelo de cobrança for definido.
+| Plano | Preço | Devedores | Dívidas |
+|---|---|---|---|
+| Gratuito | R$ 0 | até 3 | até 6 |
+| Pro | R$ 14,99/mês | até 10 | até 20 |
+| Premium | R$ 89,90/mês | ilimitado | ilimitado |
+
+- Todo usuário novo entra no plano `gratuito` (`plan_id` default 1 no banco). Valores em [`PlanSeeder`](database/seeders/PlanSeeder.php) e em [`schema.sql`](schema.sql).
+- Os limites (`plans.limite_devedores`, `plans.limite_dividas`) são aplicados em [`DevedorService`](app/Services/DevedorService.php) e [`DividaService`](app/Services/DividaService.php): ao tentar cadastrar além do limite, é lançada uma `ValidationException` — o formulário do frontend recebe o erro normalmente, sem página de erro.
+- `limite_devedores`/`limite_dividas` = `NULL` significa ilimitado (caso do plano Premium).
+- **Devedor não pode ser excluído — em nenhum plano.** Se pudesse, quem está no plano `gratuito` excluiria e recriaria devedores indefinidamente para nunca esbarrar no limite de 3. A rota `DELETE /devedores/{devedor}` nem existe (`Route::resource(...)->except(['show', 'destroy'])` em `routes/web.php`), e `DevedorService`/`DevedorPolicy` não têm método de exclusão. **Dívida continua excluível normalmente** — vale registrar que, agora que dívida também tem limite por plano, o mesmo raciocínio se aplicaria a ela (excluir e recriar para nunca bater no teto de 6/20); ainda não foi pedido bloquear a exclusão de dívida, mas é uma inconsistência a considerar.
+- **Não há cobrança real implementada.** Os valores de preço na landing page ([`welcome.tsx`](resources/js/pages/welcome.tsx)) estão num array no topo do arquivo, mantidos manualmente em sincronia com `PlanSeeder` — não vêm do banco.
 
 ## Dashboard
 
 `/dashboard` ([`DashboardController`](app/Http/Controllers/DashboardController.php) → [`DashboardService`](app/Services/DashboardService.php)) mostra um resumo real do usuário logado, sem placeholder:
 
-- **Cards**: total a receber (soma de parcelas `pendente`), total recebido (soma de parcelas `paga`), devedores usados/limite do plano (com aviso quando o limite é atingido), e quantidade de parcelas vencidas.
+- **Cards**: total a receber (soma de parcelas `pendente`), total recebido (soma de parcelas `paga`), card único "Uso do plano" com devedores e dívidas usados/limite lado a lado (aviso quando qualquer um dos dois atinge o teto), e quantidade de parcelas vencidas.
 - **Parcelas vencidas** e **Próximos vencimentos**: duas listas lado a lado, cada item leva direto para a tela de edição da dívida correspondente (onde dá pra dar baixa). "Próximos vencimentos" só considera parcelas `pendente` com vencimento a partir de hoje — uma parcela vencida não aparece duplicada nas duas listas.
 
 Toda a agregação vive em `EloquentParcelaRepository` (`totaisForUser`, `proximasForUser`, `vencidasForUser`), escopada por usuário via `whereHas('divida', ...)` já que `parcelas` não guarda `user_id` diretamente. `DashboardService` só orquestra essas chamadas e formata a resposta — sem lógica de negócio própria, é puramente leitura/apresentação.
@@ -251,7 +258,7 @@ Auditoria feita cobrindo autenticação, autorização (IDOR), validação, quer
 **Pronto:**
 - Autenticação completa (login, registro, esqueci senha, configurações de perfil)
 - Landing page (`/`) com seção de planos
-- CRUD completo de Devedores (listar com busca/paginação, criar, editar, excluir), com popup pós-cadastro oferecendo criar uma dívida na hora
+- CRUD de Devedores — sem exclusão, de propósito (listar com busca/paginação, criar, editar), com popup pós-cadastro oferecendo criar uma dívida na hora
 - CRUD completo de Dívidas (listar com busca/filtro de status incluindo "vencida"/paginação, criar com geração automática de parcelas, editar descrição/devedor, excluir com cascade das parcelas)
 - Parcelas: baixa/estorno individual e edição de vencimento na tela de edição da dívida, com o status da dívida sincronizado automaticamente (não é um CRUD tradicional — parcelas não são criadas/excluídas manualmente, só geradas com a dívida)
 - Dashboard (`/dashboard`) com dados reais do usuário logado (ver [Dashboard](#dashboard))
@@ -262,12 +269,14 @@ Auditoria feita cobrindo autenticação, autorização (IDOR), validação, quer
 ## Testes manuais realizados
 
 Sem browser automatizado disponível no ambiente de desenvolvimento; toda a validação foi feita via `curl` direto contra os endpoints dentro do container Docker:
-- Login, CRUD completo de devedor, limite de plano, isolamento entre usuários (dois usuários distintos, um não enxerga nem edita devedores do outro).
+- Login, CRUD de devedor, limite de plano, isolamento entre usuários (dois usuários distintos, um não enxerga nem edita devedores do outro).
 - CRUD completo de dívida: criação gera as parcelas certas (valor dividido exatamente, vencimentos mensais corretos — conferido direto no banco), edição, exclusão em cascata das parcelas, e validação de que não é possível criar uma dívida usando o `devedor_id` de outro usuário (422).
 - Popup pós-cadastro de devedor: `flash.devedorCriado` chega certo na primeira requisição após o cadastro e some na seguinte (confirmado com duas requisições sucessivas), e a pré-seleção do devedor em `/dividas/create?devedor_id=X` funciona.
 - Filtro `status=vencida`: criada uma dívida com `data_primeira_parcela` no passado e outra no futuro — o filtro trouxe só a vencida, `status=aberta` trouxe as duas (com o campo `vencida` certo em cada uma), e sem filtro nenhum a listagem também mostrou o campo `vencida` corretamente para cada caso.
 - Dar baixa em parcelas: dívida de 1 parcela → dar baixa virou a dívida `quitada` automaticamente, estornar voltou para `aberta`; dívida de 3 parcelas → pagar 2 de 3 manteve `aberta`, só quitou ao pagar a última. Confirmado 403 ao tentar dar baixa numa parcela de dívida de outro usuário.
 - Editar vencimento de parcela: `PATCH /parcelas/{id}/vencimento` persistiu a nova data corretamente, rejeitou data inválida (422), e bloqueou tentativa de outro usuário editar parcela alheia (403, com sessão nova — não confundir com um 419 de CSRF por reaproveitar cookie de sessão expirada de outro teste).
 - Dashboard: os totais retornados (`a_receber`, `recebido`, `vencidas_count`) foram conferidos contra `SUM`/`COUNT` direto no banco via SQL e bateram exatamente; "próximos vencimentos" veio ordenado por vencimento e não repetiu a parcela que já aparecia em "vencidas".
+- Exclusão de devedor bloqueada: `DELETE /devedores/{id}` retorna `405` (rota não existe) — confirmado que o resto do CRUD (listar, criar, editar) continua funcionando normalmente depois da mudança.
+- Novos planos: migration incremental (`add_limite_dividas_to_plans_table`) rodou sem precisar resetar o volume do MySQL, os 3 planos ficaram com os valores certos no banco, e a 7ª dívida criada por um usuário no plano `gratuito` (limite 6) retornou `422` com a mensagem certa — as 6 primeiras passaram normal. Landing page conferida: os 3 planos com preços e limites corretos estão de fato no bundle JS compilado.
 
 Recomenda-se validação manual no navegador antes de qualquer deploy.

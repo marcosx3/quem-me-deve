@@ -39,11 +39,6 @@ class DevedorService
         return $this->devedores->update($devedor, $data);
     }
 
-    public function delete(Devedor $devedor): bool
-    {
-        return $this->devedores->delete($devedor);
-    }
-
     private function ensureWithinPlanLimit(User $user): void
     {
         $limit = $user->plan?->limite_devedores;

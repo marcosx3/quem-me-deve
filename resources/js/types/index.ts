@@ -110,9 +110,11 @@ export interface ParcelaResumo {
 
 export interface DashboardResumo {
     devedoresCount: number;
+    dividasCount: number;
     plano: {
         nome: string | null;
         limiteDevedores: number | null;
+        limiteDividas: number | null;
     };
     totais: {
         a_receber: string;

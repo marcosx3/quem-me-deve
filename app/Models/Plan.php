@@ -15,6 +15,7 @@ class Plan extends Model
         'nome',
         'preco_centavos',
         'limite_devedores',
+        'limite_dividas',
     ];
 
     protected function casts(): array
@@ -22,6 +23,7 @@ class Plan extends Model
         return [
             'preco_centavos' => 'integer',
             'limite_devedores' => 'integer',
+            'limite_dividas' => 'integer',
         ];
     }
 

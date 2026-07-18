@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Parcela;
 use App\Models\User;
 use App\Repositories\Contracts\DevedorRepositoryInterface;
+use App\Repositories\Contracts\DividaRepositoryInterface;
 use App\Repositories\Contracts\ParcelaRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -12,6 +13,7 @@ class DashboardService
 {
     public function __construct(
         private readonly DevedorRepositoryInterface $devedores,
+        private readonly DividaRepositoryInterface $dividas,
         private readonly ParcelaRepositoryInterface $parcelas,
     ) {
     }
@@ -20,9 +22,11 @@ class DashboardService
     {
         return [
             'devedoresCount' => $this->devedores->countForUser($user->id),
+            'dividasCount' => $this->dividas->countForUser($user->id),
             'plano' => [
                 'nome' => $user->plan?->nome,
                 'limiteDevedores' => $user->plan?->limite_devedores,
+                'limiteDividas' => $user->plan?->limite_dividas,
             ],
             'totais' => $this->parcelas->totaisForUser($user->id),
             'proximasParcelas' => $this->formatarParcelas($this->parcelas->proximasForUser($user->id)),

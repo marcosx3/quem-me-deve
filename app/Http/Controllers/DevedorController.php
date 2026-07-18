@@ -62,13 +62,4 @@ class DevedorController extends Controller
 
         return to_route('devedores.index')->with('success', 'Devedor atualizado com sucesso.');
     }
-
-    public function destroy(Devedor $devedor): RedirectResponse
-    {
-        Gate::authorize('delete', $devedor);
-
-        $this->devedores->delete($devedor);
-
-        return to_route('devedores.index')->with('success', 'Devedor removido com sucesso.');
-    }
 }

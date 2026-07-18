@@ -7,14 +7,16 @@ CREATE TABLE IF NOT EXISTS plans (
     nome VARCHAR(60) NOT NULL,
     preco_centavos INT UNSIGNED NOT NULL DEFAULT 0,
     limite_devedores INT UNSIGNED NULL,
+    limite_dividas INT UNSIGNED NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_plans_slug (slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO plans (id, slug, nome, preco_centavos, limite_devedores) VALUES
-    (1, 'gratuito', 'Gratuito', 0, 3),
-    (2, 'pro', 'Pro', 1990, NULL)
+INSERT INTO plans (id, slug, nome, preco_centavos, limite_devedores, limite_dividas) VALUES
+    (1, 'gratuito', 'Gratuito', 0, 3, 6),
+    (2, 'pro', 'Pro', 1499, 10, 20),
+    (3, 'premium', 'Premium', 8990, NULL, NULL)
 ON DUPLICATE KEY UPDATE slug = slug;
 
 CREATE TABLE IF NOT EXISTS users (

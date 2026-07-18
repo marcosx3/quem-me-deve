@@ -1,13 +1,13 @@
 import HeadingSmall from '@/components/heading-small';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Devedor, type PaginatedData, type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { CheckCircle2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { CheckCircle2, Pencil, Plus, Search } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Devedores', href: '/devedores' }];
@@ -80,15 +80,11 @@ export default function DevedoresIndex({ devedores, filters }: { devedores: Pagi
                                         {new Date(devedor.created_at).toLocaleDateString('pt-BR')}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex justify-end gap-1">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link href={route('devedores.edit', devedor.id)} aria-label="Editar">
-                                                    <Pencil className="size-4" />
-                                                </Link>
-                                            </Button>
-
-                                            <DeleteDevedorDialog devedor={devedor} />
-                                        </div>
+                                        <Button variant="ghost" size="icon" asChild>
+                                            <Link href={route('devedores.edit', devedor.id)} aria-label="Editar">
+                                                <Pencil className="size-4" />
+                                            </Link>
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -130,40 +126,5 @@ export default function DevedoresIndex({ devedores, filters }: { devedores: Pagi
                 </DialogContent>
             </Dialog>
         </AppLayout>
-    );
-}
-
-function DeleteDevedorDialog({ devedor }: { devedor: Devedor }) {
-    const [open, setOpen] = useState(false);
-
-    const handleDelete = () => {
-        router.delete(route('devedores.destroy', devedor.id), {
-            preserveScroll: true,
-            onSuccess: () => setOpen(false),
-        });
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Excluir">
-                    <Trash2 className="size-4 text-destructive" />
-                </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogTitle>Excluir {devedor.nome}?</DialogTitle>
-                <DialogDescription>
-                    Essa ação não pode ser desfeita. Todas as dívidas e parcelas associadas a este devedor também serão removidas.
-                </DialogDescription>
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="secondary">Cancelar</Button>
-                    </DialogClose>
-                    <Button variant="destructive" onClick={handleDelete}>
-                        Excluir
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
     );
 }

@@ -8,6 +8,7 @@ use App\Repositories\Contracts\DividaRepositoryInterface;
 use App\Repositories\Contracts\ParcelaRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class DividaService
 {
@@ -24,6 +25,8 @@ class DividaService
 
     public function createForUser(User $user, array $data): Divida
     {
+        $this->ensureWithinPlanLimit($user);
+
         $data['user_id'] = $user->id;
         $data['status'] = 'aberta';
 
@@ -51,6 +54,21 @@ class DividaService
     public function delete(Divida $divida): bool
     {
         return $this->dividas->delete($divida);
+    }
+
+    private function ensureWithinPlanLimit(User $user): void
+    {
+        $limit = $user->plan?->limite_dividas;
+
+        if ($limit === null) {
+            return;
+        }
+
+        if ($this->dividas->countForUser($user->id) >= $limit) {
+            throw ValidationException::withMessages([
+                'descricao' => "Você atingiu o limite de {$limit} dívidas do seu plano atual.",
+            ]);
+        }
     }
 
     /**

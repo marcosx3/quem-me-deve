@@ -39,19 +39,29 @@ const plans = [
         period: '',
         description: 'Para quem está começando a organizar as contas.',
         highlight: false,
-        limit: 'Até 3 devedores',
-        extras: ['Dívidas e parcelas ilimitadas', 'Controle de vencimentos'],
+        limits: ['Até 3 devedores', 'Até 6 dívidas'],
+        extras: ['Controle de vencimentos'],
         cta: 'Criar conta grátis',
     },
     {
         name: 'Pro',
-        price: 'R$ 15',
+        price: 'R$ 14,99',
         period: '/mês',
         description: 'Para quem tem mais gente te devendo.',
         highlight: true,
-        limit: 'Até 10 devedores',
-        extras: ['Dívidas e parcelas ilimitadas', 'Controle de vencimentos', 'Suporte prioritário'],
+        limits: ['Até 10 devedores', 'Até 20 dívidas'],
+        extras: ['Controle de vencimentos', 'Suporte prioritário'],
         cta: 'Assinar Pro',
+    },
+    {
+        name: 'Premium',
+        price: 'R$ 89,90',
+        period: '/mês',
+        description: 'Para quem cobra em escala e não quer pensar em limite.',
+        highlight: false,
+        limits: ['Devedores ilimitados', 'Dívidas ilimitadas'],
+        extras: ['Controle de vencimentos', 'Suporte prioritário'],
+        cta: 'Assinar Premium',
     },
 ];
 
@@ -246,7 +256,7 @@ export default function Welcome() {
                                 <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Planos para todo tamanho de bagunça</h2>
                                 <p className="mt-2 text-muted-foreground">Comece grátis e evolua quando precisar controlar mais gente.</p>
                             </div>
-                            <div className="mx-auto grid max-w-3xl gap-6 sm:grid-cols-2">
+                            <div className="mx-auto grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {plans.map((plan) => (
                                     <Card
                                         key={plan.name}
@@ -264,10 +274,12 @@ export default function Welcome() {
                                             </div>
                                         </CardHeader>
                                         <CardContent className="flex flex-col gap-3">
-                                            <div className="flex items-center gap-2 text-sm font-medium">
-                                                <Check className="size-4 shrink-0 text-primary" />
-                                                {plan.limit}
-                                            </div>
+                                            {plan.limits.map((limit) => (
+                                                <div key={limit} className="flex items-center gap-2 text-sm font-medium">
+                                                    <Check className="size-4 shrink-0 text-primary" />
+                                                    {limit}
+                                                </div>
+                                            ))}
                                             {plan.extras.map((extra) => (
                                                 <div key={extra} className="flex items-center gap-2 text-sm text-muted-foreground">
                                                     <Check className="size-4 shrink-0 text-primary" />

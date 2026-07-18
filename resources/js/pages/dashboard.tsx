@@ -9,8 +9,9 @@ import { AlertTriangle, CalendarClock, HandCoins, Plus, Users, Wallet } from 'lu
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
 
-export default function Dashboard({ devedoresCount, plano, totais, proximasParcelas, parcelasVencidas }: DashboardResumo) {
-    const limiteAtingido = plano.limiteDevedores !== null && devedoresCount >= plano.limiteDevedores;
+export default function Dashboard({ devedoresCount, dividasCount, plano, totais, proximasParcelas, parcelasVencidas }: DashboardResumo) {
+    const devedoresNoLimite = plano.limiteDevedores !== null && devedoresCount >= plano.limiteDevedores;
+    const dividasNoLimite = plano.limiteDividas !== null && dividasCount >= plano.limiteDividas;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -62,21 +63,27 @@ export default function Dashboard({ devedoresCount, plano, totais, proximasParce
 
                     <Card>
                         <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Devedores</CardTitle>
+                            <CardTitle className="text-sm font-medium text-muted-foreground">Uso do plano {plano.nome ?? '—'}</CardTitle>
                             <Users className="size-4 text-primary" />
                         </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold">
-                                {devedoresCount}
-                                {plano.limiteDevedores !== null && <span className="text-base text-muted-foreground">/{plano.limiteDevedores}</span>}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                                {limiteAtingido ? (
-                                    <span className="text-destructive">Limite do plano {plano.nome} atingido</span>
-                                ) : (
-                                    `Plano ${plano.nome ?? '—'}`
-                                )}
-                            </p>
+                        <CardContent className="flex flex-col gap-1.5">
+                            <div className="flex items-baseline justify-between">
+                                <span className="text-xs text-muted-foreground">Devedores</span>
+                                <span className={`text-sm font-semibold ${devedoresNoLimite ? 'text-destructive' : ''}`}>
+                                    {devedoresCount}
+                                    {plano.limiteDevedores !== null ? `/${plano.limiteDevedores}` : ' (sem limite)'}
+                                </span>
+                            </div>
+                            <div className="flex items-baseline justify-between">
+                                <span className="text-xs text-muted-foreground">Dívidas</span>
+                                <span className={`text-sm font-semibold ${dividasNoLimite ? 'text-destructive' : ''}`}>
+                                    {dividasCount}
+                                    {plano.limiteDividas !== null ? `/${plano.limiteDividas}` : ' (sem limite)'}
+                                </span>
+                            </div>
+                            {(devedoresNoLimite || dividasNoLimite) && (
+                                <p className="pt-1 text-xs text-destructive">Limite do plano atingido</p>
+                            )}
                         </CardContent>
                     </Card>
 
