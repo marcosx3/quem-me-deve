@@ -11,9 +11,9 @@ Modelo de negócio freemium: o plano **Gratuito** permite até 3 devedores; o pl
 | Backend | Laravel 12 (PHP 8.4) |
 | Frontend | React 19 + TypeScript, via Inertia.js 2 (sem API REST separada) |
 | UI | Tailwind CSS 4 + shadcn/ui (Radix primitives) |
-| Banco de dados | MySQL 8 |
+| Banco de dados | PostgreSQL 16 |
 | Build | Vite 6 |
-| Infra local | Docker Compose (app + mysql) |
+| Infra local | Docker Compose (app + postgres) |
 
 O frontend não é uma SPA consumindo API — é Inertia.js: cada rota do Laravel renderiza um componente React (`resources/js/pages/**`) recebendo props tipadas do controller, sem endpoints JSON expostos publicamente.
 
@@ -29,20 +29,19 @@ APP_KEY=base64:GERE_UMA_NOVA_AQUI
 DB_DATABASE=quem
 DB_USERNAME=quem
 DB_PASSWORD=escolha-uma-senha
-MYSQL_DATABASE=quem
-MYSQL_USER=quem
-MYSQL_PASSWORD=escolha-uma-senha
-MYSQL_ROOT_PASSWORD=escolha-uma-senha
+POSTGRES_DB=quem
+POSTGRES_USER=quem
+POSTGRES_PASSWORD=escolha-uma-senha
 EOF
 ```
 
-Para gerar uma `APP_KEY` nova: `openssl rand -base64 32` (prefixe o resultado com `base64:`). `DB_PASSWORD` e `MYSQL_PASSWORD` devem ter o mesmo valor.
+Para gerar uma `APP_KEY` nova: `openssl rand -base64 32` (prefixe o resultado com `base64:`). `DB_PASSWORD` e `POSTGRES_PASSWORD` devem ter o mesmo valor (o Postgres já cria `POSTGRES_USER` como superuser da instância — não existe um "root" separado como no MySQL).
 
 ```bash
 docker compose up -d --build
 ```
 
-O `entrypoint.sh` do container `app` espera o MySQL ficar disponível, roda `php artisan migrate --force` e `php artisan db:seed --force` automaticamente a cada subida (idempotente — não duplica dados).
+O `entrypoint.sh` do container `app` espera o Postgres ficar disponível, roda `php artisan migrate --force` e `php artisan db:seed --force` automaticamente a cada subida (idempotente — não duplica dados).
 
 Acesse **http://localhost:8000**.
 
@@ -50,11 +49,11 @@ Usuário de teste (criado pelo seeder): `test@example.com` / `password`.
 
 ### Variáveis de ambiente
 
-Segredos (`APP_KEY`, senhas de banco) vêm de `.env.docker` (gitignorado) via `env_file:` no `docker-compose.yml`. O resto (nome do app, timezone, drivers) fica direto no `docker-compose.yml`, que não tem nada sensível. Para rodar fora do Docker, copie `.env.example` para `.env` e ajuste `DB_HOST`/`DB_PORT`/`DB_PASSWORD` para seu MySQL local.
+Segredos (`APP_KEY`, senhas de banco) vêm de `.env.docker` (gitignorado) via `env_file:` no `docker-compose.yml`. O resto (nome do app, timezone, drivers) fica direto no `docker-compose.yml`, que não tem nada sensível. Para rodar fora do Docker, copie `.env.example` para `.env` e ajuste `DB_HOST`/`DB_PORT`/`DB_PASSWORD` para seu PostgreSQL local.
 
 ## Modelo de dados
 
-Fonte da verdade do schema: [`schema.sql`](schema.sql). As migrations em `database/migrations/` replicam esse schema exatamente (tipos `INT UNSIGNED`, `DATETIME` com `CURRENT_TIMESTAMP`, `ENUM`, etc. — não os tipos "padrão" do Laravel como `BIGINT`/`TIMESTAMP`).
+Fonte da verdade do schema: [`schema.sql`](schema.sql), escrito em sintaxe MySQL (`INT UNSIGNED`, `ENGINE=InnoDB`, `ENUM`) — é o documento de referência dos tipos e constraints, não o script que roda de fato. As migrations em `database/migrations/` usam o Schema Builder do Laravel (`increments()`, `unsignedInteger()`, `enum()`...) para expressar a mesma intenção de forma portátil; contra o PostgreSQL (banco real da aplicação, ver [Stack tecnológica](#stack-tecnológica)) isso vira `INTEGER` (Postgres não tem unsigned) e `VARCHAR` + `CHECK constraint` no lugar de `ENUM` nativo — equivalente na prática, mas não byte-a-byte igual ao `schema.sql`.
 
 ```
 plans 1───* users 1───* devedores 1───* dividas 1───* parcelas
@@ -62,11 +61,20 @@ plans 1───* users 1───* devedores 1───* dividas 1───* pa
                          (dividas também referencia users diretamente)
 ```
 
-- **plans** — `gratuito` (3 devedores) e `pro` (ilimitado hoje; preço ainda não cobrado de fato).
+- **plans** — `gratuito`, `pro` e `premium`, cada um com seu próprio limite de devedores e dívidas (ver [Planos e regras de negócio](#planos-e-regras-de-negócio)).
 - **users** — autenticação. Note que a coluna de senha se chama `password_hash`, não `password` (ver [Autenticação](#autenticação)).
 - **devedores** — pessoas que devem dinheiro ao usuário. `slug` é único por usuário (`user_id` + `slug`), gerado automaticamente a partir do nome.
 - **dividas** — uma dívida de um devedor, com valor total e quantidade de parcelas. Status `aberta`/`quitada`. Ao criar uma dívida, as parcelas são **geradas automaticamente** (ver [Regra de negócio: geração de parcelas](#regra-de-negócio-geração-de-parcelas)).
 - **parcelas** — parcelas individuais de uma dívida, geradas pelo `DividaService` na criação. Status `pendente`/`paga`, com `pago_em` registrando a data da baixa. Cada parcela pode ser marcada como paga ("dar baixa") ou desfeita individualmente na tela de edição da dívida — não são apenas um número agregado (ver [Dar baixa em parcelas](#dar-baixa-em-parcelas)).
+
+### De MySQL para PostgreSQL
+
+O projeto rodava em MySQL até ser trocado para PostgreSQL. A migração foi direta porque nenhuma migration ou query usa SQL cru (`DB::raw`, `whereRaw`, etc. — confirmado durante a [auditoria de segurança](#segurança)); tudo passa pelo Schema Builder e pelo Eloquent, que abstraem o dialeto. Ainda assim, duas diferenças reais valem registrar:
+
+- **`ENUM` vira `VARCHAR` + `CHECK constraint`**: PostgreSQL não tem tipo `ENUM` inline como o MySQL. `$table->enum('status', [...])` continua funcionando igual do ponto de vista da aplicação (mesma validação no banco), só o DDL gerado é diferente — conferido com `\d dividas` no psql depois da migração.
+- **`useCurrentOnUpdate()` não faz nada no Postgres**: não existe `ON UPDATE CURRENT_TIMESTAMP` de coluna no Postgres (só via trigger, que o Laravel não cria automaticamente). Na prática isso não importa aqui: o Eloquent já seta `updated_at` explicitamente em toda escrita (`save()`/`update()`), e o único INSERT em lote que não passa pelo Eloquent (`ParcelaRepository::createMany()`) já seta `created_at`/`updated_at` manualmente em `DividaService::buildParcelas()`. Testado na prática: editar um devedor mudou `updated_at` corretamente mesmo sem o trigger.
+
+O que mudou no Docker: `Dockerfile` troca `pdo_mysql` por `pdo_pgsql` (com `postgresql-dev` como dependência de build no Alpine), `docker-compose.yml` troca o serviço `mysql` por `postgres:16-alpine` na porta 5432, e o volume foi **renomeado** de `db_data` para `pg_data` — reaproveitar o nome antigo faria o Postgres tentar inicializar num diretório com arquivos do MySQL dentro. `entrypoint.sh` só precisou trocar o prefixo do DSN do PDO (`mysql:` → `pgsql:`).
 
 ## Autenticação
 
@@ -245,7 +253,7 @@ Tema roxo/branco configurado via variáveis CSS em [`resources/css/app.css`](res
 Auditoria feita cobrindo autenticação, autorização (IDOR), validação, queries e configuração do Docker. Achados corrigidos:
 
 - **Segredos commitados no `docker-compose.yml`**: a `APP_KEY` e a senha do MySQL estavam hardcoded no arquivo versionado. Movidos para `.env.docker` (gitignorado, ver [Como rodar o projeto](#como-rodar-o-projeto)), com `APP_KEY`/senha **rotacionados** — os valores antigos não são mais válidos. ⚠️ A chave antiga já tinha sido enviada para o repositório remoto (`origin/main`) antes desta correção; rotacionar impede uso futuro dela, mas não a remove do histórico do git. Se o repositório for público, considere isso comprometido — reescrever histórico (`git filter-repo`/BFG) é a única forma de remover de fato.
-- **Porta do MySQL exposta em todas as interfaces**: `3306:3306` virou `127.0.0.1:3306:3306` — o banco só é alcançável a partir da própria máquina, não da rede.
+- **Porta do banco exposta em todas as interfaces**: `3306:3306` virou `127.0.0.1:3306:3306` — o banco só é alcançável a partir da própria máquina, não da rede. Mantido na migração pra PostgreSQL: a porta do serviço `postgres` também é `127.0.0.1:5432:5432` (ver [Stack tecnológica](#stack-tecnológica)).
 - **Sem rate limiting em registro/recuperação de senha**: `throttle:6,1` adicionado em `POST /register`, `POST /forgot-password` e `POST /reset-password` (o `/login` já tinha limitador próprio via `LoginRequest`). Testado: a 7ª tentativa em 1 minuto retorna `429`.
 - **`user_id` mass-assignable em `Devedor`/`Divida`**: removido do `$fillable` dos dois models. `EloquentDevedorRepository`/`EloquentDividaRepository` agora sobrescrevem `create()` usando `forceFill()` — único caminho de escrita, sempre chamado pelos Services com o `user_id` do usuário autenticado, nunca com dado bruto de requisição. Fecha a possibilidade de um futuro `Model::create($request->all())` virar um IDOR de escalação.
 
@@ -278,5 +286,6 @@ Sem browser automatizado disponível no ambiente de desenvolvimento; toda a vali
 - Dashboard: os totais retornados (`a_receber`, `recebido`, `vencidas_count`) foram conferidos contra `SUM`/`COUNT` direto no banco via SQL e bateram exatamente; "próximos vencimentos" veio ordenado por vencimento e não repetiu a parcela que já aparecia em "vencidas".
 - Exclusão de devedor bloqueada: `DELETE /devedores/{id}` retorna `405` (rota não existe) — confirmado que o resto do CRUD (listar, criar, editar) continua funcionando normalmente depois da mudança.
 - Novos planos: migration incremental (`add_limite_dividas_to_plans_table`) rodou sem precisar resetar o volume do MySQL, os 3 planos ficaram com os valores certos no banco, e a 7ª dívida criada por um usuário no plano `gratuito` (limite 6) retornou `422` com a mensagem certa — as 6 primeiras passaram normal. Landing page conferida: os 3 planos com preços e limites corretos estão de fato no bundle JS compilado.
+- Migração MySQL → PostgreSQL: todas as 8 migrations rodaram sem erro contra o Postgres, incluindo os `ENUM` (virou `CHECK constraint`, conferido com `\d dividas`). Refeito o ciclo completo de teste no Postgres: login, criar/editar devedor (`updated_at` mudou corretamente mesmo sem trigger nativo do Postgres), criar dívida com 3 parcelas (valores e vencimentos batendo), dar baixa numa parcela, limite de devedores do plano gratuito bloqueando na 4ª tentativa (`422`), dashboard com os totais agregados corretos, e porta do Postgres restrita a `127.0.0.1:5432`.
 
 Recomenda-se validação manual no navegador antes de qualquer deploy.

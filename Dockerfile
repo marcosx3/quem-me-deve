@@ -20,7 +20,8 @@ RUN composer install --no-interaction --no-scripts --no-progress --prefer-dist -
 
 FROM php:8.4-cli-alpine
 
-RUN docker-php-ext-install pdo_mysql bcmath \
+RUN apk add --no-cache postgresql-dev \
+    && docker-php-ext-install pdo_pgsql bcmath \
     && echo "variables_order = EGPCS" > /usr/local/etc/php/conf.d/variables-order.ini
 
 WORKDIR /var/www/html
