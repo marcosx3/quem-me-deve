@@ -31,7 +31,7 @@ COPY --from=vendor /app/vendor ./vendor
 COPY --from=frontend /app/public/build ./public/build
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh \
+RUN chmod +x /usr/local/bin/entrypoint.sh docker/run-tests.sh \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache
 
 EXPOSE 8000

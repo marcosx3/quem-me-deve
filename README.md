@@ -274,6 +274,22 @@ Auditoria feita cobrindo autenticação, autorização (IDOR), validação, quer
 **Não implementado ainda:**
 - Cobrança/checkout dos planos pagos
 
+## Testes automatizados
+
+Suíte PHPUnit padrão do starter kit (`tests/Feature`, `tests/Unit`), com `RefreshDatabase` + SQLite em memória. Roda dentro do container:
+
+```bash
+docker exec quem-app-1 sh docker/run-tests.sh
+```
+
+Não use `php artisan test` direto — use o wrapper. Dois problemas reais apareceram e foram corrigidos:
+
+- **`tests/` estava no `.dockerignore`** — a imagem nem tinha os arquivos de teste; `php artisan test` falhava com "Test directory not found". Removido do `.dockerignore`.
+- **Variáveis do `docker-compose.yml` vazam pro processo do PHP via `$_SERVER`, e nada em `phpunit.xml` consegue sobrescrever isso** — nem `force="true"` no `<env>` (só afeta `getenv()`/`$_ENV`). Isso causou dois sintomas bem diferentes: `DB_CONNECTION`/`DB_HOST` vazando fez os testes rodarem contra o **Postgres de desenvolvimento de verdade** (o `RefreshDatabase` chegou a rodar `migrate:fresh` nele e apagar os dados — tive que re-semear manualmente depois); e `APP_ENV` vazando como `local` (em vez de `testing`) travou o bypass de CSRF do `VerifyCsrfToken`, quebrando todo teste que faz POST/PATCH/PUT/DELETE com `419`. [`docker/run-tests.sh`](docker/run-tests.sh) resolve isso dando `unset` nessas variáveis antes de chamar `php artisan test`, pra que os valores de `phpunit.xml` (sqlite em memória, `APP_ENV=testing`, etc.) realmente valham.
+- **`plans` fica vazia num banco de teste recém-migrado** (`RefreshDatabase` só migra, não semeia) — e `users.plan_id` é FK obrigatória. `tests/TestCase.php` agora tem `$seed = true` com `$seeder = PlanSeeder::class`, rodado automaticamente antes de cada teste.
+
+Também removidos: `tests/Feature/Auth/EmailVerificationTest.php` (testava uma funcionalidade que não existe mais no app, ver [Autenticação](#autenticação)) e a referência a `email_verified_at` em `ProfileUpdateTest` (coluna que não existe no schema); e `tests/Pest.php`, que configurava o framework Pest mas nunca foi de fato instalado (`pestphp/pest` não está no `composer.json` — os testes sempre foram PHPUnit puro, com classes `extends TestCase`, e esse arquivo nunca chegou a rodar).
+
 ## Testes manuais realizados
 
 Sem browser automatizado disponível no ambiente de desenvolvimento; toda a validação foi feita via `curl` direto contra os endpoints dentro do container Docker:
@@ -287,5 +303,7 @@ Sem browser automatizado disponível no ambiente de desenvolvimento; toda a vali
 - Exclusão de devedor bloqueada: `DELETE /devedores/{id}` retorna `405` (rota não existe) — confirmado que o resto do CRUD (listar, criar, editar) continua funcionando normalmente depois da mudança.
 - Novos planos: migration incremental (`add_limite_dividas_to_plans_table`) rodou sem precisar resetar o volume do MySQL, os 3 planos ficaram com os valores certos no banco, e a 7ª dívida criada por um usuário no plano `gratuito` (limite 6) retornou `422` com a mensagem certa — as 6 primeiras passaram normal. Landing page conferida: os 3 planos com preços e limites corretos estão de fato no bundle JS compilado.
 - Migração MySQL → PostgreSQL: todas as 8 migrations rodaram sem erro contra o Postgres, incluindo os `ENUM` (virou `CHECK constraint`, conferido com `\d dividas`). Refeito o ciclo completo de teste no Postgres: login, criar/editar devedor (`updated_at` mudou corretamente mesmo sem trigger nativo do Postgres), criar dívida com 3 parcelas (valores e vencimentos batendo), dar baixa numa parcela, limite de devedores do plano gratuito bloqueando na 4ª tentativa (`422`), dashboard com os totais agregados corretos, e porta do Postgres restrita a `127.0.0.1:5432`.
+
+- Suíte automatizada: 22 testes passando (52 assertions) rodando a partir da imagem Docker reconstruída do zero — confirmado que o banco de desenvolvimento (`plans` com as 3 linhas) não foi tocado pela suíte depois da correção do vazamento de env vars.
 
 Recomenda-se validação manual no navegador antes de qualquer deploy.
