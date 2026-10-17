@@ -16,9 +16,11 @@ class DatabaseSeeder extends Seeder
         $this->call(PlanSeeder::class);
 
         if (! User::where('email', 'test@example.com')->exists()) {
-            User::factory()->create([
+            User::forceCreate([
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'password_hash' => bcrypt('password'),
+                'plan_id' => 1,
             ]);
         }
 
