@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'abacatepay' => [
+        'api_key' => env('ABACATEPAY_API_KEY'),
+        'product_id' => env('ABACATEPAY_PRODUCT_ID', 'prod_MsfgGB1LdBjnUjwneB4H3XEZ'),
+        'product_premium_id' => env('ABACATEPAY_PRODUCT_PREMIUM_ID', 'prod_5PjmF6ag3Fqkfuys3BqBT2XE'),
+        'webhook_secret' => env('ABACATEPAY_WEBHOOK_SECRET'),
+        'base_url' => env('ABACATEPAY_BASE_URL', 'https://api.abacatepay.com/v2'),
+    ],
+
 ];

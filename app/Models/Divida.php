@@ -21,6 +21,8 @@ class Divida extends Model
         'valor_total',
         'qtd_parcelas',
         'data_primeira_parcela',
+        'multa_percentual',
+        'juros_mensal_percentual',
         'status',
     ];
 
@@ -30,6 +32,8 @@ class Divida extends Model
             'valor_total' => 'decimal:2',
             'qtd_parcelas' => 'integer',
             'data_primeira_parcela' => 'date',
+            'multa_percentual' => 'decimal:2',
+            'juros_mensal_percentual' => 'decimal:2',
         ];
     }
 

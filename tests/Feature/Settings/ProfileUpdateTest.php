@@ -30,6 +30,10 @@ class ProfileUpdateTest extends TestCase
             ->patch('/settings/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'tipo_chave_pix' => 'cpf',
+                'chave_pix' => '12345678900',
+                'nome_titular_pix' => 'Test User',
+                'cidade_titular_pix' => 'SAO PAULO',
             ]);
 
         $response
@@ -40,6 +44,8 @@ class ProfileUpdateTest extends TestCase
 
         $this->assertSame('Test User', $user->name);
         $this->assertSame('test@example.com', $user->email);
+        $this->assertSame('cpf', $user->tipo_chave_pix);
+        $this->assertSame('12345678900', $user->chave_pix);
     }
 
     public function test_user_can_delete_their_account()

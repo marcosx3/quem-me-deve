@@ -19,4 +19,11 @@ class UpdateDevedorRequest extends FormRequest
             'observacoes' => ['nullable', 'string', 'max:500'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'nome.required' => 'Informe o nome ou apelido da pessoa.',
+        ];
+    }
 }

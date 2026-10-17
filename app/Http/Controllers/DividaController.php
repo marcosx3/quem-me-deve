@@ -7,6 +7,7 @@ use App\Http\Requests\Divida\UpdateDividaRequest;
 use App\Http\Resources\DividaResource;
 use App\Http\Resources\ParcelaResource;
 use App\Models\Divida;
+use App\Services\DevedorService;
 use App\Services\DividaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,8 +17,10 @@ use Inertia\Response;
 
 class DividaController extends Controller
 {
-    public function __construct(private readonly DividaService $dividas)
-    {
+    public function __construct(
+        private readonly DividaService $dividas,
+        private readonly DevedorService $devedores,
+    ) {
     }
 
     public function index(Request $request): Response
@@ -43,9 +46,44 @@ class DividaController extends Controller
 
     public function store(StoreDividaRequest $request): RedirectResponse
     {
-        $this->dividas->createForUser($request->user(), $request->validated());
+        $data = $request->validated();
+        $user = $request->user();
 
-        return to_route('dividas.index')->with('success', 'Dívida cadastrada com sucesso.');
+        // Se informou um novo devedor, cria-o automaticamente
+        if (empty($data['devedor_id']) && !empty($data['novo_devedor_nome'])) {
+            $devedor = $this->devedores->createForUser($user, [
+                'nome' => trim($data['novo_devedor_nome']),
+                'telefone' => !empty($data['novo_devedor_telefone']) ? trim($data['novo_devedor_telefone']) : null,
+            ]);
+            $data['devedor_id'] = $devedor->id;
+        }
+
+        // Padrões amigáveis para quem quer apenas registrar sem burocracia
+        if (empty($data['descricao'])) {
+            $data['descricao'] = 'Empréstimo';
+        }
+
+        if (empty($data['qtd_parcelas'])) {
+            $data['qtd_parcelas'] = 1;
+        }
+
+        if (empty($data['data_primeira_parcela'])) {
+            $data['data_primeira_parcela'] = now()->addDays(30)->toDateString();
+        }
+
+        if (! empty($data['multa_percentual']) || ! empty($data['juros_mensal_percentual'])) {
+            $isPremium = ($user->plan_id ?? 1) >= 3;
+            if (! $isPremium) {
+                $data['multa_percentual'] = null;
+                $data['juros_mensal_percentual'] = null;
+            }
+        }
+
+        unset($data['novo_devedor_nome'], $data['novo_devedor_telefone']);
+
+        $this->dividas->createForUser($user, $data);
+
+        return to_route('dividas.index')->with('success', 'Dívida registrada com sucesso.');
     }
 
     public function edit(Request $request, Divida $divida): Response
@@ -67,7 +105,15 @@ class DividaController extends Controller
     {
         Gate::authorize('update', $divida);
 
-        $this->dividas->updateForUser($divida, $request->validated());
+        $data = $request->validated();
+        $isPremium = ($request->user()->plan_id ?? 1) >= 3;
+
+        if (! $isPremium) {
+            $data['multa_percentual'] = null;
+            $data['juros_mensal_percentual'] = null;
+        }
+
+        $this->dividas->updateForUser($divida, $data);
 
         return to_route('dividas.index')->with('success', 'Dívida atualizada com sucesso.');
     }

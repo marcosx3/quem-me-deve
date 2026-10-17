@@ -35,7 +35,7 @@ class EloquentParcelaRepository extends BaseRepository implements ParcelaReposit
         return $this->forUser($userId)
             ->where('status', 'pendente')
             ->where('vencimento', '>=', now()->toDateString())
-            ->with(['divida:id,devedor_id,descricao', 'divida.devedor:id,nome'])
+            ->with(['divida:id,devedor_id,descricao,multa_percentual,juros_mensal_percentual', 'divida.devedor:id,nome,telefone'])
             ->orderBy('vencimento')
             ->limit($limit)
             ->get();
@@ -46,7 +46,7 @@ class EloquentParcelaRepository extends BaseRepository implements ParcelaReposit
         return $this->forUser($userId)
             ->where('status', 'pendente')
             ->where('vencimento', '<', now()->toDateString())
-            ->with(['divida:id,devedor_id,descricao', 'divida.devedor:id,nome'])
+            ->with(['divida:id,devedor_id,descricao,multa_percentual,juros_mensal_percentual', 'divida.devedor:id,nome,telefone'])
             ->orderBy('vencimento')
             ->limit($limit)
             ->get();

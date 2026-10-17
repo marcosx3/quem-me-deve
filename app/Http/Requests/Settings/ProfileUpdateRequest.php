@@ -27,6 +27,10 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'tipo_chave_pix' => ['nullable', 'string', 'in:cpf,cnpj,telefone,email,aleatoria'],
+            'chave_pix' => ['nullable', 'string', 'max:150'],
+            'nome_titular_pix' => ['nullable', 'string', 'max:100'],
+            'cidade_titular_pix' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

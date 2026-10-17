@@ -36,14 +36,23 @@ class DashboardService
 
     private function formatarParcelas(Collection $parcelas): array
     {
-        return $parcelas->map(fn (Parcela $parcela) => [
-            'id' => $parcela->id,
-            'divida_id' => $parcela->divida_id,
-            'numero' => $parcela->numero,
-            'valor' => $parcela->valor,
-            'vencimento' => $parcela->vencimento->toDateString(),
-            'devedor_nome' => $parcela->divida->devedor->nome,
-            'descricao' => $parcela->divida->descricao,
-        ])->all();
+        return $parcelas->map(function (Parcela $parcela) {
+            $acrescimos = $parcela->calcularAcrescimos();
+
+            return [
+                'id' => $parcela->id,
+                'divida_id' => $parcela->divida_id,
+                'numero' => $parcela->numero,
+                'valor' => $parcela->valor,
+                'vencimento' => $parcela->vencimento->toDateString(),
+                'devedor_nome' => $parcela->divida->devedor->nome,
+                'devedor_telefone' => $parcela->divida->devedor->telefone,
+                'descricao' => $parcela->divida->descricao,
+                'dias_atraso' => $acrescimos['dias_atraso'],
+                'multa_valor' => $acrescimos['multa_valor'],
+                'juros_valor' => $acrescimos['juros_valor'],
+                'valor_atualizado' => $acrescimos['valor_atualizado'],
+            ];
+        })->all();
     }
 }

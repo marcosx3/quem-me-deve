@@ -21,5 +21,22 @@ class DatabaseSeeder extends Seeder
                 'email' => 'test@example.com',
             ]);
         }
+
+        $adminEmail = 'marcos-oliveirasilva@hotmail.com';
+        $admin = User::whereRaw('LOWER(email) = ?', [$adminEmail])->first();
+        if (! $admin) {
+            User::forceCreate([
+                'name' => 'Marcos Oliveira',
+                'email' => $adminEmail,
+                'password_hash' => bcrypt('admin123'),
+                'is_admin' => true,
+                'plan_id' => 3,
+            ]);
+        } else {
+            $admin->update([
+                'is_admin' => true,
+                'plan_id' => 3,
+            ]);
+        }
     }
 }

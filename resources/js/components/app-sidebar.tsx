@@ -1,30 +1,47 @@
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
-import { LayoutGrid, Receipt, Users } from 'lucide-react';
+import { SharedData, type NavItem } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
+import { BarChart3, LayoutGrid, Receipt, ShieldCheck, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        url: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Devedores',
-        url: '/devedores',
-        icon: Users,
-    },
-    {
-        title: 'Dívidas',
-        url: '/dividas',
-        icon: Receipt,
-    },
-];
-
 export function AppSidebar() {
+    const { auth } = usePage<SharedData>().props;
+    const isAdmin = Boolean(auth.user?.is_admin);
+
+    const navItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            url: '/dashboard',
+            icon: LayoutGrid,
+        },
+        {
+            title: 'Devedores',
+            url: '/devedores',
+            icon: Users,
+        },
+        {
+            title: 'Dívidas',
+            url: '/dividas',
+            icon: Receipt,
+        },
+        {
+            title: 'Relatórios',
+            url: '/relatorios',
+            icon: BarChart3,
+        },
+        ...(isAdmin
+            ? [
+                  {
+                      title: 'Painel Admin',
+                      url: '/admin',
+                      icon: ShieldCheck,
+                  },
+              ]
+            : []),
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -40,7 +57,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={navItems} />
             </SidebarContent>
 
             <SidebarFooter>

@@ -1,3 +1,4 @@
+import CobrancaWhatsappDialog from '@/components/cobranca-whatsapp-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import AppLayout from '@/layouts/app-layout';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { type BreadcrumbItem, type DashboardResumo, type ParcelaResumo } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, CalendarClock, HandCoins, Plus, Users, Wallet } from 'lucide-react';
+import { AlertTriangle, CalendarClock, HandCoins, Plus, Sparkles, Users, Wallet } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
 
@@ -84,6 +85,14 @@ export default function Dashboard({ devedoresCount, dividasCount, plano, totais,
                             {(devedoresNoLimite || dividasNoLimite) && (
                                 <p className="pt-1 text-xs text-destructive">Limite do plano atingido</p>
                             )}
+                            {plano.limiteDevedores !== null && (
+                                <Button size="sm" variant="outline" className="mt-2 w-full gap-1.5 border-primary/30 text-xs font-semibold text-primary hover:bg-primary/5" asChild>
+                                    <Link href="/settings/profile#plano">
+                                        <Sparkles className="size-3.5 text-primary" />
+                                        Fazer Upgrade (Pro)
+                                    </Link>
+                                </Button>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -139,24 +148,53 @@ function ParcelasList({ parcelas, vazio, destaque = false }: { parcelas: Parcela
     return (
         <div className="flex flex-col divide-y">
             {parcelas.map((parcela) => (
-                <Link
-                    key={parcela.id}
-                    href={route('dividas.edit', parcela.divida_id)}
-                    className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0 hover:opacity-80"
-                >
-                    <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{parcela.devedor_nome}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                            {parcela.descricao} · parcela {parcela.numero}
-                        </p>
+                <div key={parcela.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                    <Link
+                        href={route('dividas.edit', parcela.divida_id)}
+                        className="flex min-w-0 flex-1 items-center justify-between gap-3 hover:opacity-80"
+                    >
+                        <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">{parcela.devedor_nome}</p>
+                            <p className="truncate text-xs text-muted-foreground">
+                                {parcela.descricao} · parcela {parcela.numero}
+                            </p>
+                        </div>
+                        <div className="flex shrink-0 flex-col items-end gap-0.5">
+                            <span className={destaque && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor) ? 'text-xs text-muted-foreground line-through' : 'text-sm font-semibold'}>
+                                {formatCurrency(parcela.valor)}
+                            </span>
+                            {destaque && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor) && (
+                                <span className="text-sm font-semibold text-destructive">
+                                    {formatCurrency(parcela.valor_atualizado)}
+                                </span>
+                            )}
+                            <Badge variant={destaque ? 'destructive' : 'outline'} className="text-[10px]">
+                                {formatDate(parcela.vencimento)}
+                            </Badge>
+                        </div>
+                    </Link>
+
+                    <div className="shrink-0">
+                        <CobrancaWhatsappDialog
+                            parcela={{
+                                id: parcela.id,
+                                numero: parcela.numero,
+                                valor: parcela.valor,
+                                vencimento: parcela.vencimento,
+                                vencida: destaque,
+                                dias_atraso: parcela.dias_atraso,
+                                multa_valor: parcela.multa_valor,
+                                juros_valor: parcela.juros_valor,
+                                valor_atualizado: parcela.valor_atualizado,
+                            }}
+                            devedor={{
+                                nome: parcela.devedor_nome,
+                                telefone: parcela.devedor_telefone,
+                            }}
+                            descricaoDivida={parcela.descricao}
+                        />
                     </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                        <span className="text-sm font-semibold">{formatCurrency(parcela.valor)}</span>
-                        <Badge variant={destaque ? 'destructive' : 'outline'} className="text-[10px]">
-                            {formatDate(parcela.vencimento)}
-                        </Badge>
-                    </div>
-                </Link>
+                </div>
             ))}
         </div>
     );

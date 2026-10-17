@@ -3,7 +3,7 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, Sparkles } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -11,6 +11,7 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
+    const isFree = (user.plan_id ?? 1) === 1;
 
     return (
         <>
@@ -21,6 +22,14 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+                {isFree && (
+                    <DropdownMenuItem asChild>
+                        <Link className="flex w-full items-center font-medium text-primary hover:text-primary" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
+                            <Sparkles className="mr-2 size-4 text-primary" />
+                            Fazer Upgrade (Pro)
+                        </Link>
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />

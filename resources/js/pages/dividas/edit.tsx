@@ -1,3 +1,4 @@
+import CobrancaWhatsappDialog from '@/components/cobranca-whatsapp-dialog';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +24,8 @@ export default function EditDivida({ divida, devedores, parcelas }: { divida: Di
     const { data, setData, put, processing, errors } = useForm({
         devedor_id: String(divida.devedor_id),
         descricao: divida.descricao,
+        multa_percentual: divida.multa_percentual ? String(divida.multa_percentual) : '',
+        juros_mensal_percentual: divida.juros_mensal_percentual ? String(divida.juros_mensal_percentual) : '',
     });
 
     const submit = (e: FormEvent) => {
@@ -57,9 +60,17 @@ export default function EditDivida({ divida, devedores, parcelas }: { divida: Di
                             </Badge>
                         </p>
                     </div>
-                    <div className="col-span-2">
+                    <div>
                         <p className="text-muted-foreground">1ª parcela venceu em</p>
                         <p className="font-medium">{formatDate(divida.data_primeira_parcela)}</p>
+                    </div>
+                    <div>
+                        <p className="text-muted-foreground">Juros / Multa por atraso</p>
+                        <p className="font-medium text-xs">
+                            {divida.multa_percentual || divida.juros_mensal_percentual
+                                ? `Multa: ${divida.multa_percentual ?? 0}% • Juros: ${divida.juros_mensal_percentual ?? 0}% a.m.`
+                                : 'Sem juros/multa configurados'}
+                        </p>
                     </div>
                 </div>
 
@@ -85,6 +96,38 @@ export default function EditDivida({ divida, devedores, parcelas }: { divida: Di
                         <Label htmlFor="descricao">Descrição</Label>
                         <Input id="descricao" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
                         <InputError message={errors.descricao} />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="multa_percentual">Multa por atraso (%)</Label>
+                            <Input
+                                id="multa_percentual"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="100"
+                                value={data.multa_percentual}
+                                onChange={(e) => setData('multa_percentual', e.target.value)}
+                                placeholder="0.00"
+                            />
+                            <InputError message={errors.multa_percentual} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="juros_mensal_percentual">Juros ao mês (% a.m.)</Label>
+                            <Input
+                                id="juros_mensal_percentual"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="100"
+                                value={data.juros_mensal_percentual}
+                                onChange={(e) => setData('juros_mensal_percentual', e.target.value)}
+                                placeholder="0.00"
+                            />
+                            <InputError message={errors.juros_mensal_percentual} />
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -116,14 +159,38 @@ export default function EditDivida({ divida, devedores, parcelas }: { divida: Di
                                     <TableRow key={parcela.id}>
                                         <TableCell className="text-muted-foreground">{parcela.numero}</TableCell>
                                         <TableCell>{formatDate(parcela.vencimento)}</TableCell>
-                                        <TableCell>{formatCurrency(parcela.valor)}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className={parcela.vencida && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor) ? 'line-through text-xs text-muted-foreground' : ''}>
+                                                    {formatCurrency(parcela.valor)}
+                                                </span>
+                                                {parcela.vencida && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor) && (
+                                                    <span className="flex items-center gap-1 text-sm font-semibold text-destructive">
+                                                        {formatCurrency(parcela.valor_atualizado)}
+                                                        <span className="text-[10px] font-normal text-muted-foreground">
+                                                            (+{parcela.dias_atraso}d)
+                                                        </span>
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
                                         <TableCell>
                                             <Badge variant={parcela.status === 'paga' ? 'outline' : parcela.vencida ? 'destructive' : 'default'}>
                                                 {parcela.status === 'paga' ? 'Paga' : parcela.vencida ? 'Vencida' : 'Pendente'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <div className="flex justify-end gap-1">
+                                            <div className="flex items-center justify-end gap-1">
+                                                {parcela.status !== 'paga' && (
+                                                    <CobrancaWhatsappDialog
+                                                        parcela={parcela}
+                                                        devedor={{
+                                                            nome: divida.devedor.nome,
+                                                            telefone: divida.devedor.telefone,
+                                                        }}
+                                                        descricaoDivida={divida.descricao}
+                                                    />
+                                                )}
                                                 <EditarVencimentoDialog parcela={parcela} />
                                                 <Button variant="ghost" size="sm" onClick={() => alternarStatusParcela(parcela)}>
                                                     {parcela.status === 'paga' ? 'Desfazer baixa' : 'Marcar como paga'}

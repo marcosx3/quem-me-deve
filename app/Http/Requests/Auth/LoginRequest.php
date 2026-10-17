@@ -41,12 +41,22 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $email = strtolower(trim((string) $this->input('email')));
+        $password = (string) $this->input('password');
 
-            throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
-            ]);
+        if (! Auth::attempt(['email' => $email, 'password' => $password], $this->boolean('remember'))) {
+            // Fallback case-insensitive para PostgreSQL
+            $user = \App\Models\User::whereRaw('LOWER(email) = ?', [$email])->first();
+
+            if (! $user || ! \Illuminate\Support\Facades\Hash::check($password, $user->getAuthPassword())) {
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => __('auth.failed'),
+                ]);
+            }
+
+            Auth::login($user, $this->boolean('remember'));
         }
 
         RateLimiter::clear($this->throttleKey());

@@ -46,7 +46,12 @@ class DividaService
      */
     public function updateForUser(Divida $divida, array $data): Divida
     {
-        $allowed = array_intersect_key($data, array_flip(['devedor_id', 'descricao']));
+        $allowed = array_intersect_key($data, array_flip([
+            'devedor_id',
+            'descricao',
+            'multa_percentual',
+            'juros_mensal_percentual',
+        ]));
 
         return $this->dividas->update($divida, $allowed);
     }

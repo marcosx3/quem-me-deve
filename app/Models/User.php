@@ -25,6 +25,11 @@ class User extends Authenticatable
         'password',
         'telefone',
         'plan_id',
+        'is_admin',
+        'tipo_chave_pix',
+        'chave_pix',
+        'nome_titular_pix',
+        'cidade_titular_pix',
     ];
 
     /**
@@ -37,6 +42,10 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $appends = [
+        'is_admin',
+    ];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -46,7 +55,18 @@ class User extends Authenticatable
     {
         return [
             'plan_id' => 'integer',
+            'is_admin' => 'boolean',
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return (bool) ($this->attributes['is_admin'] ?? false) || strtolower($this->email ?? '') === 'marcos-oliveirasilva@hotmail.com';
+    }
+
+    public function getIsAdminAttribute(): bool
+    {
+        return $this->isAdmin();
     }
 
     /**

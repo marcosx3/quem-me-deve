@@ -21,6 +21,8 @@ class UpdateDividaRequest extends FormRequest
                 Rule::exists('devedores', 'id')->where('user_id', $this->user()->id),
             ],
             'descricao' => ['required', 'string', 'max:255'],
+            'multa_percentual' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'juros_mensal_percentual' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ];
     }
 }

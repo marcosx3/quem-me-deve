@@ -38,11 +38,24 @@ export interface User {
     name: string;
     email: string;
     telefone: string | null;
+    tipo_chave_pix?: 'cpf' | 'cnpj' | 'telefone' | 'email' | 'aleatoria' | null;
+    chave_pix?: string | null;
+    nome_titular_pix?: string | null;
+    cidade_titular_pix?: string | null;
     plan_id: number;
+    is_admin?: boolean;
+    plan?: {
+        id: number;
+        slug: string;
+        nome: string;
+        preco_centavos: number;
+        limite_devedores: number | null;
+        limite_dividas: number | null;
+    };
     avatar?: string;
     created_at: string;
     updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
+    [key: string]: unknown;
 }
 
 export interface Devedor {
@@ -67,11 +80,14 @@ export interface Divida {
     devedor: {
         id: number;
         nome: string;
+        telefone?: string | null;
     };
     descricao: string;
     valor_total: string;
     qtd_parcelas: number;
     data_primeira_parcela: string;
+    multa_percentual?: number | null;
+    juros_mensal_percentual?: number | null;
     status: DividaStatus;
     vencida: boolean;
     parcelas_count?: number;
@@ -96,6 +112,10 @@ export interface Parcela {
     status: ParcelaStatus;
     pago_em: string | null;
     vencida: boolean;
+    dias_atraso?: number;
+    multa_valor?: number;
+    juros_valor?: number;
+    valor_atualizado?: number;
 }
 
 export interface ParcelaResumo {
@@ -105,7 +125,12 @@ export interface ParcelaResumo {
     valor: string;
     vencimento: string;
     devedor_nome: string;
+    devedor_telefone?: string | null;
     descricao: string;
+    dias_atraso?: number;
+    multa_valor?: number;
+    juros_valor?: number;
+    valor_atualizado?: number;
 }
 
 export interface DashboardResumo {
@@ -150,4 +175,40 @@ export interface PaginatedData<T> {
         to: number | null;
         total: number;
     };
+}
+
+export interface RelatorioDados {
+    totais: {
+        total_emprestado: number;
+        total_recebido: number;
+        total_pendente: number;
+        total_vencido: number;
+        total_a_receber_geral: number;
+        taxa_recuperacao: number;
+        qtd_pagas: number;
+        qtd_pendentes: number;
+        qtd_vencidas: number;
+        qtd_total_parcelas: number;
+    };
+    previsao: {
+        dias_30: { valor: number; count: number };
+        dias_60: { valor: number; count: number };
+        dias_90: { valor: number; count: number };
+        fluxo_mensal: Array<{
+            mes: string;
+            chave: string;
+            valor: number;
+            parcelas_count: number;
+        }>;
+    };
+    top_devedores: Array<{
+        id: number;
+        nome: string;
+        telefone?: string | null;
+        total_devido: number;
+        total_pago: number;
+        total_pendente: number;
+        tem_atraso: boolean;
+        dividas_count: number;
+    }>;
 }

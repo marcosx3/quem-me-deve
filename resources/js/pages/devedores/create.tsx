@@ -15,6 +15,8 @@ export default function CreateDevedor() {
         nome: '',
         telefone: '',
         observacoes: '',
+        valor_inicial: '',
+        descricao_inicial: '',
     });
 
     const submit = (e: FormEvent) => {
@@ -26,9 +28,20 @@ export default function CreateDevedor() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Novo devedor" />
             <div className="p-4">
-                <HeadingSmall title="Novo devedor" description="Cadastre uma pessoa que te deve dinheiro" />
+                <HeadingSmall
+                    title="Cadastrar pessoa"
+                    description="Anote quem te deve dinheiro. Só o nome é necessário!"
+                />
                 <div className="mt-6">
-                    <DevedorForm data={data} setData={setData} errors={errors} processing={processing} onSubmit={submit} submitLabel="Salvar" />
+                    <DevedorForm
+                        data={data}
+                        setData={setData}
+                        errors={errors}
+                        processing={processing}
+                        onSubmit={submit}
+                        submitLabel="Salvar pessoa"
+                        showInitialDebt={true}
+                    />
                 </div>
             </div>
         </AppLayout>
