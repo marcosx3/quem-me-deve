@@ -15,8 +15,7 @@ class DividaService
     public function __construct(
         private readonly DividaRepositoryInterface $dividas,
         private readonly ParcelaRepositoryInterface $parcelas,
-    ) {
-    }
+    ) {}
 
     public function listForUser(User $user, ?string $search, ?string $status): LengthAwarePaginator
     {

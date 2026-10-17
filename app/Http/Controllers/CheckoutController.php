@@ -19,13 +19,14 @@ class CheckoutController extends Controller
 
         // 2 = Pro, 3 = Premium
         $targetPlanId = (int) $request->input('plan_id', 2);
-        if (!in_array($targetPlanId, [2, 3])) {
+        if (! in_array($targetPlanId, [2, 3])) {
             $targetPlanId = 2;
         }
 
         // Se o usuário já tiver o plano desejado
         if ($user->plan_id >= $targetPlanId) {
             $nomePlano = $targetPlanId === 3 ? 'Premium' : 'Pro';
+
             return back()->with('success', "Você já possui o plano {$nomePlano} ou superior ativo!");
         }
 
@@ -44,7 +45,7 @@ class CheckoutController extends Controller
     public function callback(Request $request, User $user, AbacatePayService $abacatePay)
     {
         $targetPlanId = (int) $request->query('plan', 2);
-        if (!in_array($targetPlanId, [2, 3])) {
+        if (! in_array($targetPlanId, [2, 3])) {
             $targetPlanId = 2;
         }
 
@@ -62,7 +63,7 @@ class CheckoutController extends Controller
      */
     public function simulate(Request $request, AbacatePayService $abacatePay)
     {
-        if (!app()->environment('local')) {
+        if (! app()->environment('local')) {
             abort(403);
         }
 
@@ -70,7 +71,7 @@ class CheckoutController extends Controller
         $user = $request->user();
 
         $targetPlanId = (int) $request->input('plan_id', 2);
-        if (!in_array($targetPlanId, [1, 2, 3])) {
+        if (! in_array($targetPlanId, [1, 2, 3])) {
             $targetPlanId = 2;
         }
 

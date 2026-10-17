@@ -19,8 +19,7 @@ class DevedorController extends Controller
     public function __construct(
         private readonly DevedorService $devedores,
         private readonly DividaService $dividas,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -46,18 +45,18 @@ class DevedorController extends Controller
 
         $devedor = $this->devedores->createForUser($user, [
             'nome' => trim($data['nome']),
-            'telefone' => !empty($data['telefone']) ? trim($data['telefone']) : null,
-            'observacoes' => !empty($data['observacoes']) ? trim($data['observacoes']) : null,
+            'telefone' => ! empty($data['telefone']) ? trim($data['telefone']) : null,
+            'observacoes' => ! empty($data['observacoes']) ? trim($data['observacoes']) : null,
         ]);
 
         // Se informou valor inicial, cria a dívida imediatamente sem burocracia
-        if (!empty($data['valor_inicial'])) {
+        if (! empty($data['valor_inicial'])) {
             $this->dividas->createForUser($user, [
                 'devedor_id' => $devedor->id,
-                'descricao' => !empty($data['descricao_inicial']) ? trim($data['descricao_inicial']) : 'Empréstimo',
+                'descricao' => ! empty($data['descricao_inicial']) ? trim($data['descricao_inicial']) : 'Empréstimo',
                 'valor_total' => $data['valor_inicial'],
                 'qtd_parcelas' => 1,
-                'data_primeira_parcela' => !empty($data['data_vencimento_inicial'])
+                'data_primeira_parcela' => ! empty($data['data_vencimento_inicial'])
                     ? $data['data_vencimento_inicial']
                     : now()->addDays(30)->toDateString(),
             ]);

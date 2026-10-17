@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Plan;
-use App\Models\SiteAccessLog;
 use App\Models\User;
 use Database\Seeders\PlanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

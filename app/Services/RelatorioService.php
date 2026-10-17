@@ -141,7 +141,7 @@ class RelatorioService
             $handle = fopen('php://output', 'w');
 
             // UTF-8 BOM para compatibilidade com Microsoft Excel
-            fputs($handle, "\xEF\xBB\xBF");
+            fwrite($handle, "\xEF\xBB\xBF");
 
             // Cabeçalho com separador ';'
             fputcsv($handle, [

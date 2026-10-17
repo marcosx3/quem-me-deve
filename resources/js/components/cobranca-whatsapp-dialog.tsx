@@ -58,9 +58,7 @@ export default function CobrancaWhatsappDialog({
     const isPremium = (auth.user.plan_id ?? 1) >= 3;
 
     const [open, setOpen] = useState(false);
-    const [tone, setTone] = useState<'amigavel' | 'comercial' | 'atraso'>(
-        parcela.vencida ? 'atraso' : 'amigavel'
-    );
+    const [tone, setTone] = useState<'amigavel' | 'comercial' | 'atraso'>(parcela.vencida ? 'atraso' : 'amigavel');
     const [cobrarComAcrescimos, setCobrarComAcrescimos] = useState(false);
     const [pixData, setPixData] = useState<PixData | null>(null);
     const [loadingPix, setLoadingPix] = useState(false);
@@ -94,8 +92,7 @@ export default function CobrancaWhatsappDialog({
     const firstName = useMemo(() => devedor.nome.split(' ')[0], [devedor.nome]);
 
     const temAcrescimos = Boolean(
-        (parcela.vencida && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor)) ||
-        pixData?.tem_acrescimos
+        (parcela.vencida && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor)) || pixData?.tem_acrescimos,
     );
     const diasAtraso = pixData?.dias_atraso ?? parcela.dias_atraso ?? 0;
     const multaValor = pixData?.multa_valor ?? parcela.multa_valor ?? 0;
@@ -112,22 +109,22 @@ export default function CobrancaWhatsappDialog({
         const chavePixStr = pixData?.chave_pix ? `\n\nMinha chave Pix (${pixData.tipo_chave_pix ?? 'Pix'}): ${pixData.chave_pix}` : '';
         const copiaEColaStr = pixData?.copia_e_cola ? `\n\nCódigo Pix Copia e Cola:\n${pixData.copia_e_cola}` : '';
 
-        const detalheAcrescimos = cobrarComAcrescimos && temAcrescimos
-            ? ` (com juros/multa por ${diasAtraso}d de atraso)`
-            : '';
+        const detalheAcrescimos = cobrarComAcrescimos && temAcrescimos ? ` (com juros/multa por ${diasAtraso}d de atraso)` : '';
 
         if (tone === 'amigavel') {
             const vencTexto = parcela.vencida ? `que venceu em ${formattedDate}` : `que vence em ${formattedDate}`;
             msg = `Oi ${firstName}, tudo bem? Passando só pra te lembrar da parcela ${parcela.numero} no valor de ${formattedAmount}${detalheAcrescimos} (${descricaoDivida}), ${vencTexto}.${chavePixStr}${copiaEColaStr}\n\nObrigado!`;
         } else if (tone === 'comercial') {
-            const infoAtraso = cobrarComAcrescimos && temAcrescimos
-                ? ` O valor original de ${formattedOriginalAmount} foi atualizado para ${formattedAmount} (multa e juros por atraso).`
-                : '';
+            const infoAtraso =
+                cobrarComAcrescimos && temAcrescimos
+                    ? ` O valor original de ${formattedOriginalAmount} foi atualizado para ${formattedAmount} (multa e juros por atraso).`
+                    : '';
             msg = `Olá ${devedor.nome}. Lembramos do vencimento da sua parcela ${parcela.numero} referente a "${descricaoDivida}" em ${formattedDate}.${infoAtraso}${chavePixStr}${copiaEColaStr}\n\nAgradecemos a atenção!`;
         } else {
-            const infoAtraso = cobrarComAcrescimos && temAcrescimos
-                ? ` Valor com acréscimos por atraso: ${formattedAmount} (original: ${formattedOriginalAmount}, atraso: ${diasAtraso} dias).`
-                : ` Valor: ${formattedAmount}.`;
+            const infoAtraso =
+                cobrarComAcrescimos && temAcrescimos
+                    ? ` Valor com acréscimos por atraso: ${formattedAmount} (original: ${formattedOriginalAmount}, atraso: ${diasAtraso} dias).`
+                    : ` Valor: ${formattedAmount}.`;
             msg = `Olá ${devedor.nome}, tudo bem? Notamos que a parcela ${parcela.numero} (${descricaoDivida}) com vencimento em ${formattedDate} ainda consta pendente em nosso controle.${infoAtraso}${chavePixStr}${copiaEColaStr}\n\nPor gentileza, efetue o pagamento assim que possível. Caso já tenha realizado, favor desconsiderar.`;
         }
 
@@ -200,25 +197,23 @@ export default function CobrancaWhatsappDialog({
                         </div>
                         <div>
                             <DialogTitle className="text-lg">Cobrar no WhatsApp</DialogTitle>
-                            <DialogDescription>
-                                Envie um lembrete educado com chave Pix para {devedor.nome}
-                            </DialogDescription>
+                            <DialogDescription>Envie um lembrete educado com chave Pix para {devedor.nome}</DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
 
                 <div className="space-y-4 pt-2">
                     {/* Resumo da Parcela */}
-                    <div className="flex items-center justify-between rounded-lg border bg-muted/40 p-3 text-sm">
+                    <div className="bg-muted/40 flex items-center justify-between rounded-lg border p-3 text-sm">
                         <div>
-                            <p className="font-semibold text-foreground">{devedor.nome}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-foreground font-semibold">{devedor.nome}</p>
+                            <p className="text-muted-foreground text-xs">
                                 Parcela {parcela.numero} • {descricaoDivida} • Vence{parcela.vencida ? 'u' : ''} em {formattedDate}
                             </p>
                         </div>
                         <div className="text-right">
-                            <p className="font-bold text-base text-primary">{formattedAmount}</p>
-                            <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                            <p className="text-primary text-base font-bold">{formattedAmount}</p>
+                            <div className="mt-0.5 flex items-center justify-end gap-1.5">
                                 {parcela.vencida && (
                                     <Badge variant="destructive" className="h-5 text-[10px]">
                                         {diasAtraso > 0 ? `${diasAtraso}d em atraso` : 'Vencida'}
@@ -232,15 +227,15 @@ export default function CobrancaWhatsappDialog({
                     {temAcrescimos && (
                         <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs">
                             <div className="space-y-0.5">
-                                <span className="font-semibold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                                <span className="flex items-center gap-1.5 font-semibold text-amber-900 dark:text-amber-200">
                                     <TrendingUp className="size-3.5 text-amber-600 dark:text-amber-400" />
                                     Cobrar com juros e multa por atraso
                                 </span>
-                                <p className="text-[11px] text-muted-foreground">
+                                <p className="text-muted-foreground text-[11px]">
                                     Original: {formattedOriginalAmount} + Acréscimos: {formatCurrency(multaValor + jurosValor)}
                                 </p>
                             </div>
-                            <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <label className="flex cursor-pointer items-center gap-2 select-none">
                                 <span className="text-[11px] font-semibold text-amber-900 dark:text-amber-200">
                                     {formatCurrency(valorAtualizado)}
                                 </span>
@@ -248,7 +243,7 @@ export default function CobrancaWhatsappDialog({
                                     type="checkbox"
                                     checked={cobrarComAcrescimos}
                                     onChange={(e) => setCobrarComAcrescimos(e.target.checked)}
-                                    className="size-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer"
+                                    className="size-4 cursor-pointer rounded border-amber-400 text-amber-600 accent-amber-600 focus:ring-amber-500"
                                 />
                             </label>
                         </div>
@@ -256,9 +251,7 @@ export default function CobrancaWhatsappDialog({
 
                     {/* Tom da Mensagem */}
                     <div className="space-y-2">
-                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Tom da mensagem
-                        </Label>
+                        <Label className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Tom da mensagem</Label>
                         <div className="grid grid-cols-3 gap-2">
                             <Button
                                 type="button"
@@ -294,9 +287,9 @@ export default function CobrancaWhatsappDialog({
                     {!loadingPix && pixData && !pixData.tem_chave && (
                         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-300">
                             <p className="font-medium">Chave Pix não cadastrada!</p>
-                            <p className="mt-0.5 text-muted-foreground">
+                            <p className="text-muted-foreground mt-0.5">
                                 Cadastre sua chave Pix nas{' '}
-                                <Link href="/settings/profile" className="font-semibold text-primary underline">
+                                <Link href="/settings/profile" className="text-primary font-semibold underline">
                                     configurações do perfil
                                 </Link>{' '}
                                 para incluí-la automaticamente nas cobranças.
@@ -311,16 +304,10 @@ export default function CobrancaWhatsappDialog({
                                 <QrCode className="size-4 text-emerald-600 dark:text-emerald-400" />
                                 <div>
                                     <span className="font-semibold">Código Pix Copia e Cola gerado</span>
-                                    <p className="text-[11px] text-muted-foreground">Valor exato de {formattedAmount}</p>
+                                    <p className="text-muted-foreground text-[11px]">Valor exato de {formattedAmount}</p>
                                 </div>
                             </div>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={handleCopyPix}
-                                className="h-7 gap-1 px-2 text-xs"
-                            >
+                            <Button type="button" variant="outline" size="sm" onClick={handleCopyPix} className="h-7 gap-1 px-2 text-xs">
                                 {copiedPix ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
                                 {copiedPix ? 'Copiado!' : 'Copiar Pix'}
                             </Button>
@@ -328,10 +315,12 @@ export default function CobrancaWhatsappDialog({
                     )}
 
                     {!isPremium && (
-                        <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 p-2.5 text-xs">
+                        <div className="border-primary/20 bg-primary/5 flex items-center justify-between rounded-lg border p-2.5 text-xs">
                             <div className="flex items-center gap-1.5">
-                                <Sparkles className="size-3.5 text-primary" />
-                                <span>No <strong>Premium</strong>, geramos código Pix Copia e Cola automático com valor exato.</span>
+                                <Sparkles className="text-primary size-3.5" />
+                                <span>
+                                    No <strong>Premium</strong>, geramos código Pix Copia e Cola automático com valor exato.
+                                </span>
                             </div>
                             <Link href="/settings/profile#plano" className="text-primary font-semibold hover:underline">
                                 Upgrade
@@ -342,7 +331,7 @@ export default function CobrancaWhatsappDialog({
                     {/* Prévia da Mensagem */}
                     <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                            <Label htmlFor="customMessage" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            <Label htmlFor="customMessage" className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                                 Prévia da Mensagem (editável)
                             </Label>
                             <Button
@@ -350,7 +339,7 @@ export default function CobrancaWhatsappDialog({
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleCopyMessage}
-                                className="h-6 gap-1 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+                                className="text-muted-foreground hover:text-foreground h-6 gap-1 px-2 text-[11px]"
                             >
                                 {copiedMessage ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
                                 {copiedMessage ? 'Copiado!' : 'Copiar texto'}
@@ -361,21 +350,17 @@ export default function CobrancaWhatsappDialog({
                             rows={6}
                             value={customMessage}
                             onChange={(e) => setCustomMessage(e.target.value)}
-                            className="text-xs leading-relaxed font-mono"
+                            className="font-mono text-xs leading-relaxed"
                         />
                     </div>
                 </div>
 
-                <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end pt-2">
+                <DialogFooter className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
                     <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
                         Fechar
                     </Button>
 
-                    <Button
-                        type="button"
-                        onClick={handleSendWhatsapp}
-                        className="gap-2 bg-emerald-600 font-semibold text-white hover:bg-emerald-700"
-                    >
+                    <Button type="button" onClick={handleSendWhatsapp} className="gap-2 bg-emerald-600 font-semibold text-white hover:bg-emerald-700">
                         <MessageCircle className="size-4" />
                         Abrir WhatsApp
                         <ExternalLink className="size-3.5 opacity-70" />

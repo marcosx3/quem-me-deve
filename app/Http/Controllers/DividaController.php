@@ -20,8 +20,7 @@ class DividaController extends Controller
     public function __construct(
         private readonly DividaService $dividas,
         private readonly DevedorService $devedores,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -50,10 +49,10 @@ class DividaController extends Controller
         $user = $request->user();
 
         // Se informou um novo devedor, cria-o automaticamente
-        if (empty($data['devedor_id']) && !empty($data['novo_devedor_nome'])) {
+        if (empty($data['devedor_id']) && ! empty($data['novo_devedor_nome'])) {
             $devedor = $this->devedores->createForUser($user, [
                 'nome' => trim($data['novo_devedor_nome']),
-                'telefone' => !empty($data['novo_devedor_telefone']) ? trim($data['novo_devedor_telefone']) : null,
+                'telefone' => ! empty($data['novo_devedor_telefone']) ? trim($data['novo_devedor_telefone']) : null,
             ]);
             $data['devedor_id'] = $devedor->id;
         }

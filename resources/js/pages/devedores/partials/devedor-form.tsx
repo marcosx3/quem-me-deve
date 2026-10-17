@@ -41,9 +41,9 @@ export default function DevedorForm({
     return (
         <form onSubmit={onSubmit} className="max-w-xl space-y-6">
             {/* Campo Principal: Nome */}
-            <div className="space-y-2 rounded-xl border bg-card p-4 shadow-sm">
+            <div className="bg-card space-y-2 rounded-xl border p-4 shadow-sm">
                 <div className="flex items-center gap-2">
-                    <User className="size-4 text-primary" />
+                    <User className="text-primary size-4" />
                     <Label htmlFor="nome" className="text-base font-semibold">
                         Nome ou apelido da pessoa
                     </Label>
@@ -56,9 +56,7 @@ export default function DevedorForm({
                     placeholder="Ex: Carlinhos, Tia Bete, Marcos da Oficina"
                     className="text-base"
                 />
-                <p className="text-xs text-muted-foreground">
-                    Apenas o nome é obrigatório. Fácil e sem burocracia.
-                </p>
+                <p className="text-muted-foreground text-xs">Apenas o nome é obrigatório. Fácil e sem burocracia.</p>
                 <InputError message={errors.nome} />
             </div>
 
@@ -69,12 +67,10 @@ export default function DevedorForm({
                         <div className="flex items-start justify-between gap-4">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                    <DollarSign className="size-4 text-primary" />
-                                    <h4 className="font-semibold text-sm sm:text-base">Já te deve algum valor agora?</h4>
+                                    <DollarSign className="text-primary size-4" />
+                                    <h4 className="text-sm font-semibold sm:text-base">Já te deve algum valor agora?</h4>
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                    Se quiser, anote o valor já e economize tempo. Totalmente opcional!
-                                </p>
+                                <p className="text-muted-foreground text-xs">Se quiser, anote o valor já e economize tempo. Totalmente opcional!</p>
                             </div>
                             <Button
                                 type="button"
@@ -101,7 +97,7 @@ export default function DevedorForm({
                                         Quanto essa pessoa te deve? (R$)
                                     </Label>
                                     <div className="relative">
-                                        <span className="absolute top-1/2 left-3 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
+                                        <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2 text-sm font-semibold">
                                             R$
                                         </span>
                                         <Input
@@ -129,9 +125,7 @@ export default function DevedorForm({
                                         onChange={(e) => setData('descricao_inicial', e.target.value)}
                                         placeholder="Ex: Empréstimo, almoço, cerveja..."
                                     />
-                                    <p className="text-xs text-muted-foreground">
-                                        Se deixar em branco, salvaremos como &quot;Empréstimo&quot;.
-                                    </p>
+                                    <p className="text-muted-foreground text-xs">Se deixar em branco, salvaremos como &quot;Empréstimo&quot;.</p>
                                     <InputError message={errors.descricao_inicial} />
                                 </div>
                             </div>
@@ -141,11 +135,11 @@ export default function DevedorForm({
             )}
 
             {/* Detalhes extras opcionais (Telefone e Observações) */}
-            <div className="rounded-xl border bg-card p-4 shadow-sm">
+            <div className="bg-card rounded-xl border p-4 shadow-sm">
                 <button
                     type="button"
                     onClick={() => setShowMoreDetails(!showMoreDetails)}
-                    className="flex w-full items-center justify-between text-left text-sm font-medium text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground flex w-full items-center justify-between text-left text-sm font-medium"
                 >
                     <span>Mais informações (telefone, anotações) - opcional</span>
                     {showMoreDetails ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
@@ -161,9 +155,7 @@ export default function DevedorForm({
                                 onChange={(e) => setData('telefone', e.target.value)}
                                 placeholder="(11) 98765-4321"
                             />
-                            <p className="text-xs text-muted-foreground">
-                                Útil para enviar mensagens de cobrança depois.
-                            </p>
+                            <p className="text-muted-foreground text-xs">Útil para enviar mensagens de cobrança depois.</p>
                             <InputError message={errors.telefone} />
                         </div>
 

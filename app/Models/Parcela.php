@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -53,7 +54,7 @@ class Parcela extends Model
             ];
         }
 
-        $ref = $dataReferencia ? \Carbon\Carbon::parse($dataReferencia) : now();
+        $ref = $dataReferencia ? Carbon::parse($dataReferencia) : now();
         $vencimento = $this->vencimento->copy();
 
         if ($vencimento->isFuture() || $vencimento->isSameDay($ref)) {

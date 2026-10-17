@@ -10,9 +10,13 @@ use Illuminate\Support\Facades\Log;
 class AbacatePayService
 {
     protected string $apiKey;
+
     protected string $proProductId;
+
     protected string $premiumProductId;
+
     protected string $baseUrl;
+
     protected ?string $webhookSecret;
 
     public function __construct()
@@ -27,7 +31,7 @@ class AbacatePayService
     /**
      * Cria um checkout no AbacatePay para o usuário realizar o pagamento Pix.
      *
-     * @param int $targetPlanId 2 para Pro (R$ 14,99), 3 para Premium (R$ 89,90)
+     * @param  int  $targetPlanId  2 para Pro (R$ 14,99), 3 para Premium (R$ 89,90)
      * @return array{success: bool, url?: string, id?: string, error?: string}
      */
     public function createCheckout(User $user, int $targetPlanId = 2): array
@@ -79,7 +83,7 @@ class AbacatePayService
 
             return [
                 'success' => false,
-                'error' => 'Erro de conexão com o gateway de pagamento: ' . $e->getMessage(),
+                'error' => 'Erro de conexão com o gateway de pagamento: '.$e->getMessage(),
             ];
         }
     }
@@ -90,6 +94,7 @@ class AbacatePayService
     public function activatePlan(User $user, int $planId): bool
     {
         $validPlanId = in_array($planId, [2, 3]) ? $planId : 2;
+
         return $user->update(['plan_id' => $validPlanId]);
     }
 

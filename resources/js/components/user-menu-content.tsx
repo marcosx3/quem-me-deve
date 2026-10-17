@@ -24,8 +24,14 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuGroup>
                 {isFree && (
                     <DropdownMenuItem asChild>
-                        <Link className="flex w-full items-center font-medium text-primary hover:text-primary" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
-                            <Sparkles className="mr-2 size-4 text-primary" />
+                        <Link
+                            className="text-primary hover:text-primary flex w-full items-center font-medium"
+                            href={route('profile.edit')}
+                            as="button"
+                            prefetch
+                            onClick={cleanup}
+                        >
+                            <Sparkles className="text-primary mr-2 size-4" />
                             Fazer Upgrade (Pro)
                         </Link>
                     </DropdownMenuItem>

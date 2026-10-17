@@ -15,8 +15,7 @@ class DashboardService
         private readonly DevedorRepositoryInterface $devedores,
         private readonly DividaRepositoryInterface $dividas,
         private readonly ParcelaRepositoryInterface $parcelas,
-    ) {
-    }
+    ) {}
 
     public function resumoForUser(User $user): array
     {

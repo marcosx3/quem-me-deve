@@ -11,9 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class DevedorService
 {
-    public function __construct(private readonly DevedorRepositoryInterface $devedores)
-    {
-    }
+    public function __construct(private readonly DevedorRepositoryInterface $devedores) {}
 
     public function listForUser(User $user, ?string $search): LengthAwarePaginator
     {

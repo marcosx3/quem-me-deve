@@ -8,7 +8,6 @@ use App\Models\Parcela;
 use App\Models\Plan;
 use App\Models\SiteAccessLog;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AdminDashboardService

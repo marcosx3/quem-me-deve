@@ -23,7 +23,7 @@ class PixPayloadService
 
         // Subcampos da conta do recebedor (ID 26)
         $conta = $this->emv('00', 'br.gov.bcb.pix')
-            . $this->emv('01', $chaveLimpa);
+            .$this->emv('01', $chaveLimpa);
 
         if ($descricao) {
             $conta .= $this->emv('02', $this->sanitizarTexto($descricao, 25));
@@ -33,18 +33,18 @@ class PixPayloadService
         $adicional = $this->emv('05', $txidLimpo);
 
         $payload = $this->emv('00', '01')                       // Payload Format Indicator
-            . $this->emv('26', $conta)                          // Merchant Account Information
-            . $this->emv('52', '0000')                          // Merchant Category Code
-            . $this->emv('53', '986');                          // Transaction Currency (BRL)
+            .$this->emv('26', $conta)                          // Merchant Account Information
+            .$this->emv('52', '0000')                          // Merchant Category Code
+            .$this->emv('53', '986');                          // Transaction Currency (BRL)
 
         if ($valor !== null && $valor > 0) {
             $payload .= $this->emv('54', number_format($valor, 2, '.', '')); // Transaction Amount
         }
 
         $payload .= $this->emv('58', 'BR')                      // Country Code
-            . $this->emv('59', $nomeLimpo)                      // Merchant Name
-            . $this->emv('60', $cidadeLimpa)                    // Merchant City
-            . $this->emv('62', $adicional);                     // Additional Data Field Template
+            .$this->emv('59', $nomeLimpo)                      // Merchant Name
+            .$this->emv('60', $cidadeLimpa)                    // Merchant City
+            .$this->emv('62', $adicional);                     // Additional Data Field Template
 
         // Adiciona campo 63 para o CRC16
         $payload .= '6304';
@@ -56,7 +56,8 @@ class PixPayloadService
     private function emv(string $id, string $value): string
     {
         $length = str_pad((string) strlen($value), 2, '0', STR_PAD_LEFT);
-        return $id . $length . $value;
+
+        return $id.$length.$value;
     }
 
     private function formatarChave(string $chave, ?string $tipo): string
@@ -70,11 +71,12 @@ class PixPayloadService
         if ($tipo === 'telefone') {
             $digitos = preg_replace('/\D/', '', $chave) ?: '';
             if (strlen($digitos) === 10 || strlen($digitos) === 11) {
-                return '+55' . $digitos;
+                return '+55'.$digitos;
             }
             if (str_starts_with($digitos, '55') && (strlen($digitos) === 12 || strlen($digitos) === 13)) {
-                return '+' . $digitos;
+                return '+'.$digitos;
             }
+
             return $chave;
         }
 

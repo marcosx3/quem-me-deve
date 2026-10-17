@@ -54,7 +54,10 @@ export default function Password() {
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Atualizar senha" description="Garanta que sua conta esteja usando uma senha longa e aleatória para manter a segurança" />
+                    <HeadingSmall
+                        title="Atualizar senha"
+                        description="Garanta que sua conta esteja usando uma senha longa e aleatória para manter a segurança"
+                    />
 
                     <form onSubmit={updatePassword} className="space-y-6">
                         <div className="grid gap-2">

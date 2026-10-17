@@ -11,9 +11,7 @@ use Inertia\Response;
 
 class AdminController extends Controller
 {
-    public function __construct(private readonly AdminDashboardService $adminService)
-    {
-    }
+    public function __construct(private readonly AdminDashboardService $adminService) {}
 
     public function index(Request $request): Response
     {

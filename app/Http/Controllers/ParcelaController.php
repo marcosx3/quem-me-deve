@@ -14,9 +14,7 @@ use Illuminate\Support\Facades\Gate;
 
 class ParcelaController extends Controller
 {
-    public function __construct(private readonly ParcelaService $parcelas)
-    {
-    }
+    public function __construct(private readonly ParcelaService $parcelas) {}
 
     public function update(UpdateParcelaStatusRequest $request, Parcela $parcela): RedirectResponse
     {

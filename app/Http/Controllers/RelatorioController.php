@@ -10,9 +10,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class RelatorioController extends Controller
 {
-    public function __construct(private readonly RelatorioService $relatorios)
-    {
-    }
+    public function __construct(private readonly RelatorioService $relatorios) {}
 
     public function index(Request $request): Response
     {

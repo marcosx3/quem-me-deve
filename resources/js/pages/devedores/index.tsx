@@ -39,14 +39,14 @@ export default function DevedoresIndex({ devedores, filters }: { devedores: Pagi
 
                 {flash.success && (
                     <Alert className="border-primary/30 bg-primary/5">
-                        <CheckCircle2 className="size-4 text-primary" />
+                        <CheckCircle2 className="text-primary size-4" />
                         <AlertDescription>{flash.success}</AlertDescription>
                     </Alert>
                 )}
 
                 <form onSubmit={handleSearch} className="flex gap-2 sm:max-w-sm">
                     <div className="relative flex-1">
-                        <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
                         <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome..." className="pl-8" />
                     </div>
                     <Button type="submit" variant="secondary">
@@ -67,7 +67,7 @@ export default function DevedoresIndex({ devedores, filters }: { devedores: Pagi
                         <TableBody>
                             {devedores.data.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
+                                    <TableCell colSpan={4} className="text-muted-foreground py-8 text-center">
                                         {filters.q ? 'Nenhum devedor encontrado para essa busca.' : 'Nenhum devedor cadastrado ainda.'}
                                     </TableCell>
                                 </TableRow>
@@ -75,8 +75,8 @@ export default function DevedoresIndex({ devedores, filters }: { devedores: Pagi
                             {devedores.data.map((devedor) => (
                                 <TableRow key={devedor.id}>
                                     <TableCell className="font-medium">{devedor.nome}</TableCell>
-                                    <TableCell className="hidden text-muted-foreground sm:table-cell">{devedor.telefone ?? '—'}</TableCell>
-                                    <TableCell className="hidden text-muted-foreground md:table-cell">
+                                    <TableCell className="text-muted-foreground hidden sm:table-cell">{devedor.telefone ?? '—'}</TableCell>
+                                    <TableCell className="text-muted-foreground hidden md:table-cell">
                                         {new Date(devedor.created_at).toLocaleDateString('pt-BR')}
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -112,7 +112,9 @@ export default function DevedoresIndex({ devedores, filters }: { devedores: Pagi
             <Dialog open={devedorCriado !== null} onOpenChange={(open) => !open && setDevedorCriado(null)}>
                 <DialogContent>
                     <DialogTitle>Cadastrar uma dívida para {devedorCriado?.nome}?</DialogTitle>
-                    <DialogDescription>O devedor foi cadastrado com sucesso. Já quer aproveitar e registrar uma dívida para essa pessoa?</DialogDescription>
+                    <DialogDescription>
+                        O devedor foi cadastrado com sucesso. Já quer aproveitar e registrar uma dívida para essa pessoa?
+                    </DialogDescription>
                     <DialogFooter>
                         <DialogClose asChild>
                             <Button variant="secondary" onClick={() => setDevedorCriado(null)}>

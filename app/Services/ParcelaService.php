@@ -13,8 +13,7 @@ class ParcelaService
     public function __construct(
         private readonly ParcelaRepositoryInterface $parcelas,
         private readonly DividaRepositoryInterface $dividas,
-    ) {
-    }
+    ) {}
 
     public function marcarPaga(Parcela $parcela): Parcela
     {

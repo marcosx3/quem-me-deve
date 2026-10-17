@@ -19,11 +19,11 @@ class TrackPageViews
             try {
                 $rawIp = $request->ip() ?? '127.0.0.1';
                 $salt = config('app.key') ?: 'quem-me-deve-salt';
-                $ipHash = hash('sha256', $rawIp . $salt);
+                $ipHash = hash('sha256', $rawIp.$salt);
 
                 SiteAccessLog::create([
                     'user_id' => $request->user()?->id,
-                    'path' => '/' . ltrim($request->path(), '/'),
+                    'path' => '/'.ltrim($request->path(), '/'),
                     'method' => $request->method(),
                     'ip_hash' => $ipHash,
                     'user_agent' => substr((string) $request->userAgent(), 0, 500),

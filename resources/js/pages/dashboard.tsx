@@ -42,53 +42,56 @@ export default function Dashboard({ devedoresCount, dividasCount, plano, totais,
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <Card>
                         <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">A receber</CardTitle>
-                            <Wallet className="size-4 text-primary" />
+                            <CardTitle className="text-muted-foreground text-sm font-medium">A receber</CardTitle>
+                            <Wallet className="text-primary size-4" />
                         </CardHeader>
                         <CardContent>
                             <p className="text-2xl font-bold">{formatCurrency(totais.a_receber)}</p>
-                            <p className="text-xs text-muted-foreground">Soma das parcelas pendentes</p>
+                            <p className="text-muted-foreground text-xs">Soma das parcelas pendentes</p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Recebido</CardTitle>
-                            <HandCoins className="size-4 text-primary" />
+                            <CardTitle className="text-muted-foreground text-sm font-medium">Recebido</CardTitle>
+                            <HandCoins className="text-primary size-4" />
                         </CardHeader>
                         <CardContent>
                             <p className="text-2xl font-bold">{formatCurrency(totais.recebido)}</p>
-                            <p className="text-xs text-muted-foreground">Soma das parcelas já pagas</p>
+                            <p className="text-muted-foreground text-xs">Soma das parcelas já pagas</p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Uso do plano {plano.nome ?? '—'}</CardTitle>
-                            <Users className="size-4 text-primary" />
+                            <CardTitle className="text-muted-foreground text-sm font-medium">Uso do plano {plano.nome ?? '—'}</CardTitle>
+                            <Users className="text-primary size-4" />
                         </CardHeader>
                         <CardContent className="flex flex-col gap-1.5">
                             <div className="flex items-baseline justify-between">
-                                <span className="text-xs text-muted-foreground">Devedores</span>
+                                <span className="text-muted-foreground text-xs">Devedores</span>
                                 <span className={`text-sm font-semibold ${devedoresNoLimite ? 'text-destructive' : ''}`}>
                                     {devedoresCount}
                                     {plano.limiteDevedores !== null ? `/${plano.limiteDevedores}` : ' (sem limite)'}
                                 </span>
                             </div>
                             <div className="flex items-baseline justify-between">
-                                <span className="text-xs text-muted-foreground">Dívidas</span>
+                                <span className="text-muted-foreground text-xs">Dívidas</span>
                                 <span className={`text-sm font-semibold ${dividasNoLimite ? 'text-destructive' : ''}`}>
                                     {dividasCount}
                                     {plano.limiteDividas !== null ? `/${plano.limiteDividas}` : ' (sem limite)'}
                                 </span>
                             </div>
-                            {(devedoresNoLimite || dividasNoLimite) && (
-                                <p className="pt-1 text-xs text-destructive">Limite do plano atingido</p>
-                            )}
+                            {(devedoresNoLimite || dividasNoLimite) && <p className="text-destructive pt-1 text-xs">Limite do plano atingido</p>}
                             {plano.limiteDevedores !== null && (
-                                <Button size="sm" variant="outline" className="mt-2 w-full gap-1.5 border-primary/30 text-xs font-semibold text-primary hover:bg-primary/5" asChild>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-primary/30 text-primary hover:bg-primary/5 mt-2 w-full gap-1.5 text-xs font-semibold"
+                                    asChild
+                                >
                                     <Link href="/settings/profile#plano">
-                                        <Sparkles className="size-3.5 text-primary" />
+                                        <Sparkles className="text-primary size-3.5" />
                                         Fazer Upgrade (Pro)
                                     </Link>
                                 </Button>
@@ -98,12 +101,12 @@ export default function Dashboard({ devedoresCount, dividasCount, plano, totais,
 
                     <Card className={totais.vencidas_count > 0 ? 'border-destructive/50' : ''}>
                         <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Vencidas</CardTitle>
+                            <CardTitle className="text-muted-foreground text-sm font-medium">Vencidas</CardTitle>
                             <AlertTriangle className={`size-4 ${totais.vencidas_count > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
                         </CardHeader>
                         <CardContent>
                             <p className={`text-2xl font-bold ${totais.vencidas_count > 0 ? 'text-destructive' : ''}`}>{totais.vencidas_count}</p>
-                            <p className="text-xs text-muted-foreground">Parcelas com vencimento no passado</p>
+                            <p className="text-muted-foreground text-xs">Parcelas com vencimento no passado</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -112,7 +115,7 @@ export default function Dashboard({ devedoresCount, dividasCount, plano, totais,
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-base">
-                                <AlertTriangle className="size-4 text-destructive" />
+                                <AlertTriangle className="text-destructive size-4" />
                                 Parcelas vencidas
                             </CardTitle>
                             <CardDescription>Já passaram do vencimento e continuam pendentes.</CardDescription>
@@ -125,7 +128,7 @@ export default function Dashboard({ devedoresCount, dividasCount, plano, totais,
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-base">
-                                <CalendarClock className="size-4 text-primary" />
+                                <CalendarClock className="text-primary size-4" />
                                 Próximos vencimentos
                             </CardTitle>
                             <CardDescription>As parcelas pendentes mais próximas de vencer.</CardDescription>
@@ -142,7 +145,7 @@ export default function Dashboard({ devedoresCount, dividasCount, plano, totais,
 
 function ParcelasList({ parcelas, vazio, destaque = false }: { parcelas: ParcelaResumo[]; vazio: string; destaque?: boolean }) {
     if (parcelas.length === 0) {
-        return <p className="py-6 text-center text-sm text-muted-foreground">{vazio}</p>;
+        return <p className="text-muted-foreground py-6 text-center text-sm">{vazio}</p>;
     }
 
     return (
@@ -155,18 +158,22 @@ function ParcelasList({ parcelas, vazio, destaque = false }: { parcelas: Parcela
                     >
                         <div className="min-w-0">
                             <p className="truncate text-sm font-medium">{parcela.devedor_nome}</p>
-                            <p className="truncate text-xs text-muted-foreground">
+                            <p className="text-muted-foreground truncate text-xs">
                                 {parcela.descricao} · parcela {parcela.numero}
                             </p>
                         </div>
                         <div className="flex shrink-0 flex-col items-end gap-0.5">
-                            <span className={destaque && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor) ? 'text-xs text-muted-foreground line-through' : 'text-sm font-semibold'}>
+                            <span
+                                className={
+                                    destaque && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor)
+                                        ? 'text-muted-foreground text-xs line-through'
+                                        : 'text-sm font-semibold'
+                                }
+                            >
                                 {formatCurrency(parcela.valor)}
                             </span>
                             {destaque && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor) && (
-                                <span className="text-sm font-semibold text-destructive">
-                                    {formatCurrency(parcela.valor_atualizado)}
-                                </span>
+                                <span className="text-destructive text-sm font-semibold">{formatCurrency(parcela.valor_atualizado)}</span>
                             )}
                             <Badge variant={destaque ? 'destructive' : 'outline'} className="text-[10px]">
                                 {formatDate(parcela.vencimento)}

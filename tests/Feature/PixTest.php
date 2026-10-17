@@ -23,7 +23,7 @@ class PixTest extends TestCase
 
     public function test_pix_payload_service_generates_valid_emv_code(): void
     {
-        $service = new PixPayloadService();
+        $service = new PixPayloadService;
         $payload = $service->generate(
             chave: '12345678900',
             tipo: 'cpf',

@@ -34,11 +34,7 @@ export default function EditDivida({ divida, devedores, parcelas }: { divida: Di
     };
 
     const alternarStatusParcela = (parcela: Parcela) => {
-        router.patch(
-            route('parcelas.update', parcela.id),
-            { status: parcela.status === 'paga' ? 'pendente' : 'paga' },
-            { preserveScroll: true },
-        );
+        router.patch(route('parcelas.update', parcela.id), { status: parcela.status === 'paga' ? 'pendente' : 'paga' }, { preserveScroll: true });
     };
 
     return (
@@ -47,7 +43,7 @@ export default function EditDivida({ divida, devedores, parcelas }: { divida: Di
             <div className="p-4">
                 <HeadingSmall title="Editar dívida" description="Valor, parcelas e vencimento não podem ser alterados depois de criados" />
 
-                <div className="mt-6 grid max-w-xl grid-cols-2 gap-4 rounded-lg border bg-muted/30 p-4 text-sm">
+                <div className="bg-muted/30 mt-6 grid max-w-xl grid-cols-2 gap-4 rounded-lg border p-4 text-sm">
                     <div>
                         <p className="text-muted-foreground">Valor total</p>
                         <p className="font-medium">{formatCurrency(divida.valor_total)}</p>
@@ -66,7 +62,7 @@ export default function EditDivida({ divida, devedores, parcelas }: { divida: Di
                     </div>
                     <div>
                         <p className="text-muted-foreground">Juros / Multa por atraso</p>
-                        <p className="font-medium text-xs">
+                        <p className="text-xs font-medium">
                             {divida.multa_percentual || divida.juros_mensal_percentual
                                 ? `Multa: ${divida.multa_percentual ?? 0}% • Juros: ${divida.juros_mensal_percentual ?? 0}% a.m.`
                                 : 'Sem juros/multa configurados'}
@@ -161,13 +157,21 @@ export default function EditDivida({ divida, devedores, parcelas }: { divida: Di
                                         <TableCell>{formatDate(parcela.vencimento)}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
-                                                <span className={parcela.vencida && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor) ? 'line-through text-xs text-muted-foreground' : ''}>
+                                                <span
+                                                    className={
+                                                        parcela.vencida &&
+                                                        parcela.valor_atualizado &&
+                                                        parcela.valor_atualizado > Number(parcela.valor)
+                                                            ? 'text-muted-foreground text-xs line-through'
+                                                            : ''
+                                                    }
+                                                >
                                                     {formatCurrency(parcela.valor)}
                                                 </span>
                                                 {parcela.vencida && parcela.valor_atualizado && parcela.valor_atualizado > Number(parcela.valor) && (
-                                                    <span className="flex items-center gap-1 text-sm font-semibold text-destructive">
+                                                    <span className="text-destructive flex items-center gap-1 text-sm font-semibold">
                                                         {formatCurrency(parcela.valor_atualizado)}
-                                                        <span className="text-[10px] font-normal text-muted-foreground">
+                                                        <span className="text-muted-foreground text-[10px] font-normal">
                                                             (+{parcela.dias_atraso}d)
                                                         </span>
                                                     </span>

@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { Check, CheckCircle2, Crown, QrCode, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { Check, CheckCircle2, Crown, QrCode, ShieldCheck, Zap } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -49,16 +49,24 @@ export default function Profile() {
 
     const handleUpgrade = (targetPlanId: number) => {
         setLoadingPlan(targetPlanId);
-        router.post(route('checkout.upgrade'), { plan_id: targetPlanId }, {
-            onFinish: () => setLoadingPlan(null),
-        });
+        router.post(
+            route('checkout.upgrade'),
+            { plan_id: targetPlanId },
+            {
+                onFinish: () => setLoadingPlan(null),
+            },
+        );
     };
 
     const handleSimulate = (targetPlanId: number) => {
         setLoadingPlan(targetPlanId);
-        router.post(route('checkout.simulate'), { plan_id: targetPlanId }, {
-            onFinish: () => setLoadingPlan(null),
-        });
+        router.post(
+            route('checkout.simulate'),
+            { plan_id: targetPlanId },
+            {
+                onFinish: () => setLoadingPlan(null),
+            },
+        );
     };
 
     return (
@@ -85,26 +93,28 @@ export default function Profile() {
                     <div className="space-y-4" id="plano">
                         <HeadingSmall title="Plano e Assinatura" description="Gerencie seu plano de acesso e limites no Quem me deve" />
 
-                        <Card className={
-                            isPremium
-                                ? 'border-amber-500/40 bg-amber-500/5'
-                                : isPro
-                                ? 'border-emerald-500/40 bg-emerald-500/5'
-                                : 'border-border bg-card'
-                        }>
+                        <Card
+                            className={
+                                isPremium
+                                    ? 'border-amber-500/40 bg-amber-500/5'
+                                    : isPro
+                                      ? 'border-emerald-500/40 bg-emerald-500/5'
+                                      : 'border-border bg-card'
+                            }
+                        >
                             <CardHeader className="pb-3">
                                 <div className="flex items-center justify-between">
-                                    <CardTitle className="text-base font-bold flex items-center gap-2">
+                                    <CardTitle className="flex items-center gap-2 text-base font-bold">
                                         Plano Atual: {isPremium ? 'Premium' : isPro ? 'Pro' : 'Gratuito'}
                                     </CardTitle>
                                     <Badge
                                         variant={isFree ? 'secondary' : 'default'}
                                         className={
                                             isPremium
-                                                ? 'bg-amber-500 hover:bg-amber-500 text-black font-semibold'
+                                                ? 'bg-amber-500 font-semibold text-black hover:bg-amber-500'
                                                 : isPro
-                                                ? 'bg-emerald-600 hover:bg-emerald-600 text-white'
-                                                : ''
+                                                  ? 'bg-emerald-600 text-white hover:bg-emerald-600'
+                                                  : ''
                                         }
                                     >
                                         {isPremium ? 'Premium Ilimitado 👑' : isPro ? 'Pro Ativo ✨' : 'Gratuito'}
@@ -114,14 +124,14 @@ export default function Profile() {
                                     {isPremium
                                         ? 'Você tem acesso ilimitado: cadastre quantos devedores e dívidas precisar sem limite.'
                                         : isPro
-                                        ? 'Você possui limites ampliados para controlar até 10 devedores e 20 dívidas ativas.'
-                                        : 'Você está no plano gratuito com limite de até 3 devedores e 6 dívidas ativas.'}
+                                          ? 'Você possui limites ampliados para controlar até 10 devedores e 20 dívidas ativas.'
+                                          : 'Você está no plano gratuito com limite de até 3 devedores e 6 dívidas ativas.'}
                                 </CardDescription>
                             </CardHeader>
 
                             <CardContent className="space-y-4 pt-1">
                                 {isPremium ? (
-                                    <div className="flex items-center gap-2.5 rounded-lg border border-amber-500/30 bg-background/60 p-3 text-xs text-muted-foreground">
+                                    <div className="bg-background/60 text-muted-foreground flex items-center gap-2.5 rounded-lg border border-amber-500/30 p-3 text-xs">
                                         <Crown className="size-4 text-amber-500" />
                                         <span>Conta com acesso total sem restrições. Muito obrigado por ser um usuário Premium!</span>
                                     </div>
@@ -129,26 +139,28 @@ export default function Profile() {
                                     <div className="grid gap-3 sm:grid-cols-2">
                                         {/* Opção Pro (disponível se for Free) */}
                                         {isFree && (
-                                            <div className="flex flex-col justify-between rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
+                                            <div className="border-primary/30 bg-primary/5 flex flex-col justify-between rounded-xl border-2 p-4">
                                                 <div>
                                                     <div className="flex items-center justify-between">
-                                                        <span className="font-bold text-sm text-foreground">Plano Pro</span>
-                                                        <Badge variant="secondary" className="text-[10px]">Mais popular</Badge>
+                                                        <span className="text-foreground text-sm font-bold">Plano Pro</span>
+                                                        <Badge variant="secondary" className="text-[10px]">
+                                                            Mais popular
+                                                        </Badge>
                                                     </div>
-                                                    <p className="mt-1 text-xs text-muted-foreground">Até 10 devedores e 20 dívidas</p>
+                                                    <p className="text-muted-foreground mt-1 text-xs">Até 10 devedores e 20 dívidas</p>
                                                     <div className="my-3">
                                                         <span className="text-2xl font-bold">R$ 14,99</span>
-                                                        <span className="text-xs text-muted-foreground">/mês</span>
+                                                        <span className="text-muted-foreground text-xs">/mês</span>
                                                     </div>
-                                                    <div className="space-y-1.5 text-xs text-muted-foreground">
+                                                    <div className="text-muted-foreground space-y-1.5 text-xs">
                                                         <div className="flex items-center gap-1.5">
-                                                            <Check className="size-3.5 text-primary" /> 10 devedores cadastrados
+                                                            <Check className="text-primary size-3.5" /> 10 devedores cadastrados
                                                         </div>
                                                         <div className="flex items-center gap-1.5">
-                                                            <Check className="size-3.5 text-primary" /> 20 dívidas ativas
+                                                            <Check className="text-primary size-3.5" /> 20 dívidas ativas
                                                         </div>
                                                         <div className="flex items-center gap-1.5">
-                                                            <Check className="size-3.5 text-primary" /> Suporte prioritário
+                                                            <Check className="text-primary size-3.5" /> Suporte prioritário
                                                         </div>
                                                     </div>
                                                 </div>
@@ -165,26 +177,29 @@ export default function Profile() {
                                         )}
 
                                         {/* Opção Premium (disponível se for Free ou Pro) */}
-                                        <div className={`flex flex-col justify-between rounded-xl border-2 border-amber-500/40 bg-amber-500/5 p-4 ${isPro ? 'sm:col-span-2 max-w-md' : ''}`}>
+                                        <div
+                                            className={`flex flex-col justify-between rounded-xl border-2 border-amber-500/40 bg-amber-500/5 p-4 ${isPro ? 'max-w-md sm:col-span-2' : ''}`}
+                                        >
                                             <div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                                                    <span className="text-foreground flex items-center gap-1.5 text-sm font-bold">
                                                         <Crown className="size-4 text-amber-500" />
                                                         Plano Premium
                                                     </span>
-                                                    <Badge className="bg-amber-500 hover:bg-amber-500 text-black text-[10px]">Ilimitado</Badge>
+                                                    <Badge className="bg-amber-500 text-[10px] text-black hover:bg-amber-500">Ilimitado</Badge>
                                                 </div>
-                                                <p className="mt-1 text-xs text-muted-foreground">Devedores e dívidas 100% ilimitadas</p>
+                                                <p className="text-muted-foreground mt-1 text-xs">Devedores e dívidas 100% ilimitadas</p>
                                                 <div className="my-3">
                                                     <span className="text-2xl font-bold">R$ 89,90</span>
-                                                    <span className="text-xs text-muted-foreground">/mês</span>
+                                                    <span className="text-muted-foreground text-xs">/mês</span>
                                                 </div>
-                                                <div className="space-y-1.5 text-xs text-muted-foreground">
+                                                <div className="text-muted-foreground space-y-1.5 text-xs">
                                                     <div className="flex items-center gap-1.5">
                                                         <Check className="size-3.5 text-amber-600 dark:text-amber-400" /> Devedores ilimitados
                                                     </div>
                                                     <div className="flex items-center gap-1.5">
-                                                        <Check className="size-3.5 text-amber-600 dark:text-amber-400" /> Dívidas e parcelas ilimitadas
+                                                        <Check className="size-3.5 text-amber-600 dark:text-amber-400" /> Dívidas e parcelas
+                                                        ilimitadas
                                                     </div>
                                                     <div className="flex items-center gap-1.5">
                                                         <Check className="size-3.5 text-amber-600 dark:text-amber-400" /> Suporte direto e prioritário
@@ -195,7 +210,7 @@ export default function Profile() {
                                             <Button
                                                 onClick={() => handleUpgrade(3)}
                                                 disabled={loadingPlan !== null}
-                                                className="mt-4 w-full gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs"
+                                                className="mt-4 w-full gap-1.5 bg-amber-600 text-xs font-semibold text-white shadow-xs hover:bg-amber-700"
                                             >
                                                 <Crown className="size-3.5" />
                                                 {loadingPlan === 3 ? 'Gerando Pix...' : 'Assinar Premium (R$ 89,90)'}
@@ -206,9 +221,9 @@ export default function Profile() {
                             </CardContent>
 
                             {/* Área de Simulação para Testes Locais */}
-                            <CardFooter className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs text-muted-foreground">
+                            <CardFooter className="text-muted-foreground flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
                                 <span className="flex items-center gap-1">
-                                    <ShieldCheck className="size-3.5 text-primary" /> Pagamento seguro via Pix com AbacatePay
+                                    <ShieldCheck className="text-primary size-3.5" /> Pagamento seguro via Pix com AbacatePay
                                 </span>
 
                                 <div className="flex items-center gap-1.5">
@@ -284,13 +299,14 @@ export default function Profile() {
                             </div>
 
                             {/* Configuração de Chave Pix para Cobranças */}
-                            <div className="space-y-4 rounded-xl border bg-card p-5 shadow-sm">
+                            <div className="bg-card space-y-4 rounded-xl border p-5 shadow-sm">
                                 <div className="flex items-center gap-2">
-                                    <QrCode className="size-5 text-primary" />
+                                    <QrCode className="text-primary size-5" />
                                     <div>
-                                        <h3 className="font-semibold text-base">Chave Pix para Cobranças</h3>
-                                        <p className="text-xs text-muted-foreground">
-                                            Essa chave será incluída automaticamente nas mensagens de cobrança do WhatsApp e no código Pix Copia-e-Cola.
+                                        <h3 className="text-base font-semibold">Chave Pix para Cobranças</h3>
+                                        <p className="text-muted-foreground text-xs">
+                                            Essa chave será incluída automaticamente nas mensagens de cobrança do WhatsApp e no código Pix
+                                            Copia-e-Cola.
                                         </p>
                                     </div>
                                 </div>
@@ -298,10 +314,7 @@ export default function Profile() {
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <div className="grid gap-2">
                                         <Label htmlFor="tipo_chave_pix">Tipo de Chave</Label>
-                                        <Select
-                                            value={data.tipo_chave_pix}
-                                            onValueChange={(val) => setData('tipo_chave_pix', val)}
-                                        >
+                                        <Select value={data.tipo_chave_pix} onValueChange={(val) => setData('tipo_chave_pix', val)}>
                                             <SelectTrigger id="tipo_chave_pix">
                                                 <SelectValue placeholder="Selecione o tipo" />
                                             </SelectTrigger>
@@ -340,7 +353,7 @@ export default function Profile() {
 
                                 <div className="grid grid-cols-1 gap-4 border-t pt-3 sm:grid-cols-2">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="nome_titular_pix" className="text-xs text-muted-foreground">
+                                        <Label htmlFor="nome_titular_pix" className="text-muted-foreground text-xs">
                                             Nome do Titular da Conta (opcional)
                                         </Label>
                                         <Input
@@ -354,7 +367,7 @@ export default function Profile() {
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="cidade_titular_pix" className="text-xs text-muted-foreground">
+                                        <Label htmlFor="cidade_titular_pix" className="text-muted-foreground text-xs">
                                             Cidade do Titular da Conta (opcional)
                                         </Label>
                                         <Input

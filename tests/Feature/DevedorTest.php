@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Devedor;
 use App\Models\Divida;
-use App\Models\Plan;
 use App\Models\User;
 use Database\Seeders\PlanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

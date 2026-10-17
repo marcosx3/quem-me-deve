@@ -54,7 +54,7 @@ export default function DividasIndex({ dividas, filters }: { dividas: PaginatedD
 
                 {flash.success && (
                     <Alert className="border-primary/30 bg-primary/5">
-                        <CheckCircle2 className="size-4 text-primary" />
+                        <CheckCircle2 className="text-primary size-4" />
                         <AlertDescription>{flash.success}</AlertDescription>
                     </Alert>
                 )}
@@ -62,7 +62,7 @@ export default function DividasIndex({ dividas, filters }: { dividas: PaginatedD
                 <div className="flex flex-col gap-2 sm:flex-row">
                     <form onSubmit={handleSearch} className="flex flex-1 gap-2 sm:max-w-sm">
                         <div className="relative flex-1">
-                            <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
                             <Input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
@@ -103,8 +103,10 @@ export default function DividasIndex({ dividas, filters }: { dividas: PaginatedD
                         <TableBody>
                             {dividas.data.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                                        {filters.q || filters.status ? 'Nenhuma dívida encontrada para esse filtro.' : 'Nenhuma dívida cadastrada ainda.'}
+                                    <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
+                                        {filters.q || filters.status
+                                            ? 'Nenhuma dívida encontrada para esse filtro.'
+                                            : 'Nenhuma dívida cadastrada ainda.'}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -113,13 +115,11 @@ export default function DividasIndex({ dividas, filters }: { dividas: PaginatedD
                                     <TableCell className="font-medium">{divida.devedor.nome}</TableCell>
                                     <TableCell className="text-muted-foreground">{divida.descricao}</TableCell>
                                     <TableCell className="hidden sm:table-cell">{formatCurrency(divida.valor_total)}</TableCell>
-                                    <TableCell className="hidden text-muted-foreground md:table-cell">
+                                    <TableCell className="text-muted-foreground hidden md:table-cell">
                                         {divida.parcelas_pagas_count ?? 0}/{divida.qtd_parcelas}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge
-                                            variant={divida.status === 'quitada' ? 'outline' : divida.vencida ? 'destructive' : 'default'}
-                                        >
+                                        <Badge variant={divida.status === 'quitada' ? 'outline' : divida.vencida ? 'destructive' : 'default'}>
                                             {divida.status === 'quitada' ? 'Quitada' : divida.vencida ? 'Vencida' : 'Aberta'}
                                         </Badge>
                                     </TableCell>
@@ -174,7 +174,7 @@ function DeleteDividaDialog({ divida }: { divida: Divida }) {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="Excluir">
-                    <Trash2 className="size-4 text-destructive" />
+                    <Trash2 className="text-destructive size-4" />
                 </Button>
             </DialogTrigger>
             <DialogContent>

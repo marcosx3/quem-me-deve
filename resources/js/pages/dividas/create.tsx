@@ -10,7 +10,7 @@ import AppLayout from '@/layouts/app-layout';
 import { formatCurrency } from '@/lib/utils';
 import { type BreadcrumbItem, type DevedorOption, type SharedData } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Calendar, Check, ChevronDown, ChevronUp, DollarSign, FileText, Percent, Plus, Sparkles, User, UserPlus, Users } from 'lucide-react';
+import { Calendar, Check, ChevronDown, ChevronUp, DollarSign, FileText, Percent, Sparkles, User, UserPlus, Users } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -44,18 +44,10 @@ function formatDateShort(isoDate: string): string {
 const AMOUNT_PRESETS = [20, 50, 100, 200, 500];
 const INSTALLMENT_PRESETS = [1, 2, 3, 4, 6, 12];
 
-export default function CreateDivida({
-    devedores,
-    devedorSelecionadoId,
-}: {
-    devedores: DevedorOption[];
-    devedorSelecionadoId: number | null;
-}) {
+export default function CreateDivida({ devedores, devedorSelecionadoId }: { devedores: DevedorOption[]; devedorSelecionadoId: number | null }) {
     // Se o usuário não tiver devedores ou se quiser adicionar na hora, começa em 'new'
     const hasDevedores = devedores.length > 0;
-    const [debtorMode, setDebtorMode] = useState<'existing' | 'new'>(
-        hasDevedores ? 'existing' : 'new'
-    );
+    const [debtorMode, setDebtorMode] = useState<'existing' | 'new'>(hasDevedores ? 'existing' : 'new');
 
     const defaultDate = useMemo(() => getPresetDate('30d'), []);
     const date15d = useMemo(() => getPresetDate('15d'), []);
@@ -68,7 +60,7 @@ export default function CreateDivida({
     const [showJuros, setShowJuros] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
-        devedor_id: devedorSelecionadoId ? String(devedorSelecionadoId) : (hasDevedores ? String(devedores[0]?.id || '') : ''),
+        devedor_id: devedorSelecionadoId ? String(devedorSelecionadoId) : hasDevedores ? String(devedores[0]?.id || '') : '',
         novo_devedor_nome: '',
         novo_devedor_telefone: '',
         descricao: '',
@@ -110,10 +102,7 @@ export default function CreateDivida({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Anotar dívida" />
             <div className="p-4">
-                <HeadingSmall
-                    title="Anotar uma dívida"
-                    description="Registre rapidamente quem te deve e quanto. Sem burocracia."
-                />
+                <HeadingSmall title="Anotar uma dívida" description="Registre rapidamente quem te deve e quanto. Sem burocracia." />
 
                 <form onSubmit={submit} className="mt-6 max-w-xl space-y-6">
                     {/* Seção 1: Quem te deve? */}
@@ -121,12 +110,12 @@ export default function CreateDivida({
                         <CardContent className="space-y-4 pt-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <User className="size-4 text-primary" />
+                                    <User className="text-primary size-4" />
                                     <Label className="text-base font-semibold">Quem te deve?</Label>
                                 </div>
 
                                 {hasDevedores && (
-                                    <div className="flex items-center rounded-lg bg-muted p-1 text-xs">
+                                    <div className="bg-muted flex items-center rounded-lg p-1 text-xs">
                                         <button
                                             type="button"
                                             onClick={() => setDebtorMode('existing')}
@@ -157,10 +146,7 @@ export default function CreateDivida({
 
                             {debtorMode === 'existing' && hasDevedores ? (
                                 <div className="space-y-2">
-                                    <Select
-                                        value={data.devedor_id}
-                                        onValueChange={(val) => setData('devedor_id', val)}
-                                    >
+                                    <Select value={data.devedor_id} onValueChange={(val) => setData('devedor_id', val)}>
                                         <SelectTrigger id="devedor_id" className="text-base">
                                             <SelectValue placeholder="Selecione quem te deve" />
                                         </SelectTrigger>
@@ -173,12 +159,12 @@ export default function CreateDivida({
                                         </SelectContent>
                                     </Select>
                                     <InputError message={errors.devedor_id} />
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-muted-foreground text-xs">
                                         Quer anotar para outra pessoa?{' '}
                                         <button
                                             type="button"
                                             onClick={() => setDebtorMode('new')}
-                                            className="font-medium text-primary underline underline-offset-2"
+                                            className="text-primary font-medium underline underline-offset-2"
                                         >
                                             Digitar um novo nome
                                         </button>
@@ -187,7 +173,7 @@ export default function CreateDivida({
                             ) : (
                                 <div className="space-y-4">
                                     {!hasDevedores && (
-                                        <div className="rounded-lg bg-primary/10 p-3 text-xs text-primary">
+                                        <div className="bg-primary/10 text-primary rounded-lg p-3 text-xs">
                                             Basta digitar o nome da pessoa abaixo. Salvaremos o contato automaticamente para você!
                                         </div>
                                     )}
@@ -208,7 +194,7 @@ export default function CreateDivida({
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="novo_devedor_telefone" className="text-sm font-medium text-muted-foreground">
+                                        <Label htmlFor="novo_devedor_telefone" className="text-muted-foreground text-sm font-medium">
                                             WhatsApp ou telefone (opcional)
                                         </Label>
                                         <Input
@@ -221,12 +207,12 @@ export default function CreateDivida({
                                     </div>
 
                                     {hasDevedores && (
-                                        <p className="text-xs text-muted-foreground">
+                                        <p className="text-muted-foreground text-xs">
                                             Ou prefere{' '}
                                             <button
                                                 type="button"
                                                 onClick={() => setDebtorMode('existing')}
-                                                className="font-medium text-primary underline underline-offset-2"
+                                                className="text-primary font-medium underline underline-offset-2"
                                             >
                                                 escolher alguém da lista existente
                                             </button>
@@ -242,16 +228,14 @@ export default function CreateDivida({
                     <Card className="shadow-sm">
                         <CardContent className="space-y-4 pt-6">
                             <div className="flex items-center gap-2">
-                                <DollarSign className="size-4 text-primary" />
+                                <DollarSign className="text-primary size-4" />
                                 <Label htmlFor="valor_total" className="text-base font-semibold">
                                     Quanto te deve?
                                 </Label>
                             </div>
 
                             <div className="relative">
-                                <span className="absolute top-1/2 left-3.5 -translate-y-1/2 text-lg font-bold text-muted-foreground">
-                                    R$
-                                </span>
+                                <span className="text-muted-foreground absolute top-1/2 left-3.5 -translate-y-1/2 text-lg font-bold">R$</span>
                                 <Input
                                     id="valor_total"
                                     type="number"
@@ -267,7 +251,7 @@ export default function CreateDivida({
 
                             {/* Chips de valores rápidos */}
                             <div className="flex flex-wrap items-center gap-2 pt-1">
-                                <span className="text-xs text-muted-foreground">Valores rápidos:</span>
+                                <span className="text-muted-foreground text-xs">Valores rápidos:</span>
                                 {AMOUNT_PRESETS.map((val) => (
                                     <Button
                                         key={val}
@@ -288,9 +272,9 @@ export default function CreateDivida({
                     <Card className="shadow-sm">
                         <CardContent className="space-y-3 pt-6">
                             <div className="flex items-center gap-2">
-                                <FileText className="size-4 text-primary" />
+                                <FileText className="text-primary size-4" />
                                 <Label htmlFor="descricao" className="text-base font-semibold">
-                                    Do que se trata? <span className="text-xs font-normal text-muted-foreground">(Opcional)</span>
+                                    Do que se trata? <span className="text-muted-foreground text-xs font-normal">(Opcional)</span>
                                 </Label>
                             </div>
                             <Input
@@ -299,9 +283,7 @@ export default function CreateDivida({
                                 onChange={(e) => setData('descricao', e.target.value)}
                                 placeholder="Ex: Empréstimo, almoço de domingo, conserto..."
                             />
-                            <p className="text-xs text-muted-foreground">
-                                Se deixar em branco, salvaremos como &quot;Empréstimo&quot;.
-                            </p>
+                            <p className="text-muted-foreground text-xs">Se deixar em branco, salvaremos como &quot;Empréstimo&quot;.</p>
                             <InputError message={errors.descricao} />
                         </CardContent>
                     </Card>
@@ -312,7 +294,7 @@ export default function CreateDivida({
                             <div className="flex items-center justify-between">
                                 <Label className="text-base font-semibold">Como vai pagar?</Label>
                                 {installmentValue && parsedInstallments > 1 && (
-                                    <Badge variant="secondary" className="font-semibold text-primary">
+                                    <Badge variant="secondary" className="text-primary font-semibold">
                                         {parsedInstallments}x de {formatCurrency(installmentValue)}/mês
                                     </Badge>
                                 )}
@@ -344,7 +326,7 @@ export default function CreateDivida({
 
                             {installmentOption === 'custom' && (
                                 <div className="max-w-[200px] pt-1">
-                                    <Label htmlFor="qtd_parcelas" className="text-xs text-muted-foreground">
+                                    <Label htmlFor="qtd_parcelas" className="text-muted-foreground text-xs">
                                         Número de parcelas
                                     </Label>
                                     <Input
@@ -366,7 +348,7 @@ export default function CreateDivida({
                     <Card className="shadow-sm">
                         <CardContent className="space-y-4 pt-6">
                             <div className="flex items-center gap-2">
-                                <Calendar className="size-4 text-primary" />
+                                <Calendar className="text-primary size-4" />
                                 <Label className="text-base font-semibold">Quando deve pagar?</Label>
                             </div>
 
@@ -411,7 +393,7 @@ export default function CreateDivida({
 
                             {dateOption === 'custom' && (
                                 <div className="max-w-[220px] pt-1">
-                                    <Label htmlFor="data_primeira_parcela" className="text-xs text-muted-foreground">
+                                    <Label htmlFor="data_primeira_parcela" className="text-muted-foreground text-xs">
                                         Data do vencimento
                                     </Label>
                                     <Input
@@ -425,7 +407,7 @@ export default function CreateDivida({
                                 </div>
                             )}
 
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-muted-foreground text-xs">
                                 {parsedInstallments > 1
                                     ? 'As parcelas seguintes vencerão mensalmente a partir dessa data.'
                                     : 'Data sugerida para você cobrar ou acompanhar o pagamento.'}
@@ -439,21 +421,26 @@ export default function CreateDivida({
                             <button
                                 type="button"
                                 onClick={() => setShowJuros(!showJuros)}
-                                className="flex w-full items-center justify-between text-left text-sm font-semibold hover:text-primary transition-colors"
+                                className="hover:text-primary flex w-full items-center justify-between text-left text-sm font-semibold transition-colors"
                             >
                                 <div className="flex items-center gap-2">
-                                    <Percent className="size-4 text-primary" />
+                                    <Percent className="text-primary size-4" />
                                     <span>Cobrar juros ou multa se houver atraso? (Opcional)</span>
                                 </div>
-                                {showJuros ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
+                                {showJuros ? (
+                                    <ChevronUp className="text-muted-foreground size-4" />
+                                ) : (
+                                    <ChevronDown className="text-muted-foreground size-4" />
+                                )}
                             </button>
 
                             {showJuros && (
                                 <div className="mt-4 space-y-4 border-t pt-4">
                                     {isPremium ? (
                                         <>
-                                            <p className="text-xs text-muted-foreground">
-                                                Configure os percentuais desejados. Se uma parcela atrasar, o sistema calculará o valor atualizado automaticamente a cada dia.
+                                            <p className="text-muted-foreground text-xs">
+                                                Configure os percentuais desejados. Se uma parcela atrasar, o sistema calculará o valor atualizado
+                                                automaticamente a cada dia.
                                             </p>
                                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                 <div className="grid gap-2">
@@ -472,7 +459,7 @@ export default function CreateDivida({
                                                             placeholder="Ex: 2.00 (2%)"
                                                             className="pr-8"
                                                         />
-                                                        <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+                                                        <span className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold">
                                                             %
                                                         </span>
                                                     </div>
@@ -495,7 +482,7 @@ export default function CreateDivida({
                                                             placeholder="Ex: 1.00 (1%/mês)"
                                                             className="pr-8"
                                                         />
-                                                        <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+                                                        <span className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold">
                                                             %
                                                         </span>
                                                     </div>
@@ -504,9 +491,9 @@ export default function CreateDivida({
                                             </div>
                                         </>
                                     ) : (
-                                        <div className="flex items-center justify-between rounded-lg bg-primary/5 p-3 text-xs">
+                                        <div className="bg-primary/5 flex items-center justify-between rounded-lg p-3 text-xs">
                                             <div className="space-y-0.5">
-                                                <p className="font-semibold text-primary flex items-center gap-1.5">
+                                                <p className="text-primary flex items-center gap-1.5 font-semibold">
                                                     <Sparkles className="size-3.5" />
                                                     Recurso exclusivo do plano Premium
                                                 </p>

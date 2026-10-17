@@ -28,10 +28,7 @@ export default function CreateDevedor() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Novo devedor" />
             <div className="p-4">
-                <HeadingSmall
-                    title="Cadastrar pessoa"
-                    description="Anote quem te deve dinheiro. Só o nome é necessário!"
-                />
+                <HeadingSmall title="Cadastrar pessoa" description="Anote quem te deve dinheiro. Só o nome é necessário!" />
                 <div className="mt-6">
                     <DevedorForm
                         data={data}
