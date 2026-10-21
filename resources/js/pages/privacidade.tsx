@@ -27,20 +27,22 @@ export default function Privacidade() {
                             </div>
                         </Link>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                             <AppearanceToggleDropdown />
-                            <Button variant="outline" size="sm" asChild className="gap-1.5">
+                            <Button variant="outline" size="sm" asChild className="gap-1.5 text-xs sm:text-sm">
                                 <Link href="/">
                                     <ArrowLeft className="size-4" />
-                                    <span>Voltar ao início</span>
+                                    <span>
+                                        Voltar<span className="hidden sm:inline"> ao início</span>
+                                    </span>
                                 </Link>
                             </Button>
                             {auth.user ? (
-                                <Button size="sm" asChild>
+                                <Button size="sm" asChild className="text-xs sm:text-sm">
                                     <Link href={route('dashboard')}>Dashboard</Link>
                                 </Button>
                             ) : (
-                                <Button size="sm" asChild>
+                                <Button size="sm" asChild className="text-xs sm:text-sm">
                                     <Link href={route('login')}>Entrar</Link>
                                 </Button>
                             )}

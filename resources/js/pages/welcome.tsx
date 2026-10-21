@@ -1,10 +1,11 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import AppearanceToggleDropdown from '@/components/appearance-dropdown';
+import AppearanceToggleTab from '@/components/appearance-tabs';
 import PublicFooter from '@/components/public-footer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
@@ -148,9 +149,9 @@ export default function Welcome() {
 
             <div className="bg-background text-foreground selection:bg-primary/20 selection:text-primary min-h-screen antialiased">
                 {/* Cabeçalho */}
-                <header className="bg-background/90 sticky top-0 z-40 border-b backdrop-blur-md">
+                <header className="bg-background/95 sticky top-0 z-40 border-b backdrop-blur-md">
                     <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-                        <Link href="/" className="flex items-center gap-2.5 font-semibold transition-opacity hover:opacity-90">
+                        <Link href="/" className="flex shrink-0 items-center gap-2.5 font-semibold transition-opacity hover:opacity-90">
                             <span className="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-lg shadow-sm">
                                 <AppLogoIcon className="size-5" />
                             </span>
@@ -160,9 +161,10 @@ export default function Welcome() {
                             </div>
                         </Link>
 
-                        <nav className="text-muted-foreground hidden items-center gap-7 text-sm font-medium lg:flex">
-                            <a href="#cenarios" className="hover:text-foreground transition-colors">
-                                Para quem é?
+                        {/* Menu Desktop: 4 itens essenciais e limpos, sem sobreposição */}
+                        <nav className="text-muted-foreground hidden items-center gap-6 text-sm font-medium md:flex lg:gap-8">
+                            <a href="#como-funciona" className="hover:text-foreground transition-colors">
+                                Como funciona
                             </a>
                             <a
                                 href="#whatsapp-pix"
@@ -170,24 +172,16 @@ export default function Welcome() {
                             >
                                 Cobrança WhatsApp
                             </a>
-                            <a href="#como-funciona" className="hover:text-foreground transition-colors">
-                                Como funciona
-                            </a>
-                            <a href="#comparativo" className="hover:text-foreground transition-colors">
-                                Por que não Excel?
-                            </a>
                             <a href="#planos" className="hover:text-foreground transition-colors">
                                 Planos
                             </a>
                             <a href="#faq" className="hover:text-foreground transition-colors">
                                 Dúvidas
                             </a>
-                            <a href="#contato" className="hover:text-foreground transition-colors">
-                                Contato
-                            </a>
                         </nav>
 
-                        <div className="hidden items-center gap-3 md:flex">
+                        {/* Ações Desktop */}
+                        <div className="hidden shrink-0 items-center gap-3 md:flex">
                             <AppearanceToggleDropdown />
                             {auth.user ? (
                                 <Button asChild className="gap-2">
@@ -201,7 +195,7 @@ export default function Welcome() {
                                     <Button variant="ghost" asChild>
                                         <Link href={route('login')}>Entrar</Link>
                                     </Button>
-                                    <Button asChild className="gap-2">
+                                    <Button asChild className="gap-2 shadow-xs">
                                         <Link href={route('register')}>
                                             Começar grátis
                                             <ArrowRight className="size-4" />
@@ -211,11 +205,12 @@ export default function Welcome() {
                             )}
                         </div>
 
-                        <div className="flex items-center gap-2 md:hidden">
+                        {/* Menu Mobile: Botão de Tema + Menu Gaveta */}
+                        <div className="flex items-center gap-1.5 md:hidden">
                             <AppearanceToggleDropdown />
                             <Sheet>
                                 <SheetTrigger asChild>
-                                    <Button variant="ghost" size="icon" aria-label="Abrir menu de navegação">
+                                    <Button variant="ghost" size="icon" className="size-9" aria-label="Abrir menu de navegação">
                                         <Menu className="size-5" />
                                     </Button>
                                 </SheetTrigger>
@@ -228,47 +223,75 @@ export default function Welcome() {
                                             Quem me deve
                                         </SheetTitle>
                                     </SheetHeader>
-                                    <nav className="flex flex-col gap-4 text-base">
-                                        <a href="#cenarios" className="text-muted-foreground hover:text-foreground transition-colors">
-                                            Para quem é?
-                                        </a>
-                                        <a
-                                            href="#whatsapp-pix"
-                                            className="hover:text-foreground font-semibold text-emerald-600 transition-colors dark:text-emerald-400"
-                                        >
-                                            Cobrança no WhatsApp
-                                        </a>
-                                        <a href="#como-funciona" className="text-muted-foreground hover:text-foreground transition-colors">
-                                            Como funciona
-                                        </a>
-                                        <a href="#comparativo" className="text-muted-foreground hover:text-foreground transition-colors">
-                                            Por que não Excel?
-                                        </a>
-                                        <a href="#planos" className="text-muted-foreground hover:text-foreground transition-colors">
-                                            Planos
-                                        </a>
-                                        <a href="#faq" className="text-muted-foreground hover:text-foreground transition-colors">
-                                            Dúvidas frequentes (FAQ)
-                                        </a>
-                                        <a href="#contato" className="text-muted-foreground hover:text-foreground transition-colors">
-                                            Contato
-                                        </a>
+                                    <nav className="flex flex-col gap-3 text-base">
+                                        <SheetClose asChild>
+                                            <a href="#como-funciona" className="text-muted-foreground hover:text-foreground py-1 transition-colors">
+                                                Como funciona
+                                            </a>
+                                        </SheetClose>
+                                        <SheetClose asChild>
+                                            <a
+                                                href="#whatsapp-pix"
+                                                className="hover:text-foreground py-1 font-semibold text-emerald-600 transition-colors dark:text-emerald-400"
+                                            >
+                                                Cobrança no WhatsApp
+                                            </a>
+                                        </SheetClose>
+                                        <SheetClose asChild>
+                                            <a href="#cenarios" className="text-muted-foreground hover:text-foreground py-1 transition-colors">
+                                                Para quem é?
+                                            </a>
+                                        </SheetClose>
+                                        <SheetClose asChild>
+                                            <a href="#comparativo" className="text-muted-foreground hover:text-foreground py-1 transition-colors">
+                                                Por que não Excel?
+                                            </a>
+                                        </SheetClose>
+                                        <SheetClose asChild>
+                                            <a href="#planos" className="text-muted-foreground hover:text-foreground py-1 transition-colors">
+                                                Planos
+                                            </a>
+                                        </SheetClose>
+                                        <SheetClose asChild>
+                                            <a href="#faq" className="text-muted-foreground hover:text-foreground py-1 transition-colors">
+                                                Dúvidas frequentes (FAQ)
+                                            </a>
+                                        </SheetClose>
+                                        <SheetClose asChild>
+                                            <a href="#contato" className="text-muted-foreground hover:text-foreground py-1 transition-colors">
+                                                Contato & Suporte
+                                            </a>
+                                        </SheetClose>
                                     </nav>
-                                    <div className="mt-auto flex flex-col gap-2 border-t pt-6">
-                                        {auth.user ? (
-                                            <Button asChild className="w-full">
-                                                <Link href={route('dashboard')}>Ir para o Dashboard</Link>
-                                            </Button>
-                                        ) : (
-                                            <>
-                                                <Button variant="outline" asChild className="w-full">
-                                                    <Link href={route('login')}>Entrar na conta</Link>
-                                                </Button>
-                                                <Button asChild className="w-full">
-                                                    <Link href={route('register')}>Criar conta grátis</Link>
-                                                </Button>
-                                            </>
-                                        )}
+
+                                    <div className="mt-auto flex flex-col gap-4 border-t pt-5">
+                                        <div className="flex flex-col gap-2">
+                                            <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Aparência</span>
+                                            <AppearanceToggleTab className="w-full justify-between" />
+                                        </div>
+
+                                        <div className="flex flex-col gap-2 pt-1">
+                                            {auth.user ? (
+                                                <SheetClose asChild>
+                                                    <Button asChild className="w-full">
+                                                        <Link href={route('dashboard')}>Ir para o Dashboard</Link>
+                                                    </Button>
+                                                </SheetClose>
+                                            ) : (
+                                                <>
+                                                    <SheetClose asChild>
+                                                        <Button variant="outline" asChild className="w-full">
+                                                            <Link href={route('login')}>Entrar na conta</Link>
+                                                        </Button>
+                                                    </SheetClose>
+                                                    <SheetClose asChild>
+                                                        <Button asChild className="w-full shadow-xs">
+                                                            <Link href={route('register')}>Criar conta grátis</Link>
+                                                        </Button>
+                                                    </SheetClose>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </SheetContent>
                             </Sheet>
