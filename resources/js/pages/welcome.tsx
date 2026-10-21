@@ -1,5 +1,6 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import AppearanceToggleDropdown from '@/components/appearance-dropdown';
+import PublicFooter from '@/components/public-footer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +14,7 @@ import {
     CheckCircle2,
     Clock,
     HeartHandshake,
+    Mail,
     Menu,
     MessageCircle,
     Receipt,
@@ -141,6 +143,9 @@ export default function Welcome() {
                             <a href="#planos" className="hover:text-foreground transition-colors">
                                 Planos
                             </a>
+                            <a href="#contato" className="hover:text-foreground transition-colors">
+                                Contato
+                            </a>
                         </nav>
 
                         <div className="hidden items-center gap-3 md:flex">
@@ -196,6 +201,9 @@ export default function Welcome() {
                                         </a>
                                         <a href="#planos" className="text-muted-foreground hover:text-foreground transition-colors">
                                             Planos
+                                        </a>
+                                        <a href="#contato" className="text-muted-foreground hover:text-foreground transition-colors">
+                                            Contato
                                         </a>
                                     </nav>
                                     <div className="mt-auto flex flex-col gap-2 border-t pt-6">
@@ -543,6 +551,51 @@ export default function Welcome() {
                         </div>
                     </section>
 
+                    {/* Contato & Suporte */}
+                    <section id="contato" className="bg-muted/20 border-t py-16 sm:py-20">
+                        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+                            <div className="mx-auto max-w-2xl text-center">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                    <MessageCircle className="size-3.5" /> Atendimento & Suporte
+                                </span>
+                                <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">Fale diretamente conosco</h2>
+                                <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+                                    Dúvidas sobre planos, sugestões de melhoria ou suporte técnico? Estamos à disposição.
+                                </p>
+                            </div>
+
+                            <div className="mx-auto mt-8 grid max-w-xl grid-cols-1 gap-4 sm:grid-cols-2">
+                                <a
+                                    href="https://wa.me/5531997760109?text=Ol%C3%A1%2C%20gostaria%20de%20tirar%20uma%20d%C3%BAvida%20sobre%20o%20Quem%20me%20deve"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-background flex items-center gap-3 rounded-xl border p-4 shadow-xs transition-all hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:shadow-md"
+                                >
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                                        <MessageCircle className="size-5" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-muted-foreground text-xs">Chamar no WhatsApp</p>
+                                        <p className="text-foreground text-sm font-bold">(31) 99776-0109</p>
+                                    </div>
+                                </a>
+
+                                <a
+                                    href="mailto:marcos-oliveirasilva@hotmail.com"
+                                    className="bg-background hover:border-primary/40 hover:bg-primary/5 flex items-center gap-3 rounded-xl border p-4 shadow-xs transition-all hover:shadow-md"
+                                >
+                                    <div className="bg-primary/15 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                                        <Mail className="size-5" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-muted-foreground text-xs">Enviar um E-mail</p>
+                                        <p className="text-foreground truncate text-xs font-bold">marcos-oliveirasilva@hotmail.com</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
                     {/* Chamada Final Humanizada */}
                     <section className="py-16 sm:py-24">
                         <div className="mx-auto max-w-4xl px-4 sm:px-6">
@@ -569,18 +622,7 @@ export default function Welcome() {
                 </main>
 
                 {/* Rodapé */}
-                <footer className="bg-background border-t py-8">
-                    <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-center text-xs sm:flex-row sm:px-6 sm:text-left">
-                        <div className="flex items-center gap-2">
-                            <span className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded">
-                                <AppLogoIcon className="size-3" />
-                            </span>
-                            <span className="text-foreground font-semibold">Quem me deve</span>
-                            <span>— © {new Date().getFullYear()}</span>
-                        </div>
-                        <span>Feito para quem preza pela paz de espírito e quer o próprio dinheiro de volta.</span>
-                    </div>
-                </footer>
+                <PublicFooter />
             </div>
         </>
     );

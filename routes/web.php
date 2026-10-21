@@ -21,6 +21,14 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+Route::get('termos-de-uso', function () {
+    return Inertia::render('termos');
+})->name('termos');
+
+Route::get('politica-de-privacidade', function () {
+    return Inertia::render('privacidade');
+})->name('privacidade');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

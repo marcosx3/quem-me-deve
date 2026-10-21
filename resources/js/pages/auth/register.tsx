@@ -103,8 +103,20 @@ export default function Register() {
 
                     <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Create account
+                        Criar minha conta
                     </Button>
+
+                    <p className="text-muted-foreground text-center text-[11px] leading-relaxed">
+                        Ao criar sua conta, você concorda com nossos{' '}
+                        <a href={route('termos')} target="_blank" rel="noopener noreferrer" className="hover:text-foreground underline">
+                            Termos de Uso
+                        </a>{' '}
+                        e{' '}
+                        <a href={route('privacidade')} target="_blank" rel="noopener noreferrer" className="hover:text-foreground underline">
+                            Política de Privacidade
+                        </a>
+                        .
+                    </p>
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
