@@ -14,10 +14,13 @@ import {
     CheckCircle2,
     Clock,
     HeartHandshake,
+    HelpCircle,
+    Lock,
     Mail,
     Menu,
     MessageCircle,
     Receipt,
+    ShieldCheck,
     Smartphone,
     Sparkles,
     Users,
@@ -49,6 +52,33 @@ const realScenarios = [
         title: 'Divisão de rolês e viagens',
         description: 'Você passou o cartão na pousada ou comprou os ingressos da turma? Centralize quem já mandou o Pix e quem ainda tá devendo.',
         tag: 'Grupos',
+    },
+];
+
+const faqs = [
+    {
+        question: 'O aplicativo cobra meus amigos ou envia mensagens sozinho?',
+        answer: 'De forma alguma! O Quem me deve é um caderno digital 100% pessoal e privado. Ninguém além de você vê o que está registrado e nenhuma mensagem é enviada sem sua revisão. Nosso gerador apenas monta o texto educado para você, se desejar, abrir e enviar pelo seu próprio WhatsApp.',
+    },
+    {
+        question: 'Preciso cadastrar cartão de crédito para usar o plano grátis?',
+        answer: 'Zero cartão de crédito. Você cria sua conta informando apenas nome e e-mail. Não solicitamos dados de pagamento e não há pegadinhas ou cobranças ocultas.',
+    },
+    {
+        question: 'Preciso baixar na App Store ou Google Play?',
+        answer: 'Não precisa baixar nada nem ocupar espaço no celular! O Quem me deve funciona diretamente pelo navegador de qualquer celular (iPhone ou Android) ou computador. Se quiser, basta tocar em "Adicionar à tela de início" para abrir como um app nativo.',
+    },
+    {
+        question: 'Como dou baixa quando a pessoa me pagar?',
+        answer: 'Basta abrir sua lista e tocar no botão "Quitar parcela" com 1 clique. O valor é abatido do total a receber instantaneamente e fica salvo no seu histórico.',
+    },
+    {
+        question: 'Posso cobrar vendas parceladas com juros ou multa se atrasar?',
+        answer: 'Sim! Você pode cadastrar cobranças parceladas em quantas vezes combinar. E nos planos Pro e Premium, pode configurar multa e juros diários automáticos para quando houver atraso.',
+    },
+    {
+        question: 'Meus dados e anotações financeiras estão protegidos?',
+        answer: 'Totalmente. Operamos em estrita conformidade com a LGPD (Lei nº 13.709/2018). Seus registros contam com proteção criptografada e nós nunca vendemos, cedemos ou compartilhamos dados com bancos ou terceiros.',
     },
 ];
 
@@ -130,9 +160,15 @@ export default function Welcome() {
                             </div>
                         </Link>
 
-                        <nav className="text-muted-foreground hidden items-center gap-8 text-sm font-medium md:flex">
+                        <nav className="text-muted-foreground hidden items-center gap-7 text-sm font-medium lg:flex">
                             <a href="#cenarios" className="hover:text-foreground transition-colors">
                                 Para quem é?
+                            </a>
+                            <a
+                                href="#whatsapp-pix"
+                                className="hover:text-foreground font-semibold text-emerald-600 transition-colors dark:text-emerald-400"
+                            >
+                                Cobrança WhatsApp
                             </a>
                             <a href="#como-funciona" className="hover:text-foreground transition-colors">
                                 Como funciona
@@ -142,6 +178,9 @@ export default function Welcome() {
                             </a>
                             <a href="#planos" className="hover:text-foreground transition-colors">
                                 Planos
+                            </a>
+                            <a href="#faq" className="hover:text-foreground transition-colors">
+                                Dúvidas
                             </a>
                             <a href="#contato" className="hover:text-foreground transition-colors">
                                 Contato
@@ -193,6 +232,12 @@ export default function Welcome() {
                                         <a href="#cenarios" className="text-muted-foreground hover:text-foreground transition-colors">
                                             Para quem é?
                                         </a>
+                                        <a
+                                            href="#whatsapp-pix"
+                                            className="hover:text-foreground font-semibold text-emerald-600 transition-colors dark:text-emerald-400"
+                                        >
+                                            Cobrança no WhatsApp
+                                        </a>
                                         <a href="#como-funciona" className="text-muted-foreground hover:text-foreground transition-colors">
                                             Como funciona
                                         </a>
@@ -201,6 +246,9 @@ export default function Welcome() {
                                         </a>
                                         <a href="#planos" className="text-muted-foreground hover:text-foreground transition-colors">
                                             Planos
+                                        </a>
+                                        <a href="#faq" className="text-muted-foreground hover:text-foreground transition-colors">
+                                            Dúvidas frequentes (FAQ)
                                         </a>
                                         <a href="#contato" className="text-muted-foreground hover:text-foreground transition-colors">
                                             Contato
@@ -252,26 +300,30 @@ export default function Welcome() {
                                 </p>
 
                                 <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                                    <Button size="lg" asChild className="gap-2 px-6 text-base shadow-sm">
+                                    <Button size="lg" asChild className="gap-2 px-7 text-base shadow-md">
                                         <Link href={auth.user ? route('dashboard') : route('register')}>
-                                            {auth.user ? 'Acessar meu Dashboard' : 'Começar grátis agora'}
+                                            {auth.user ? 'Acessar meu Dashboard' : 'Criar minha conta grátis'}
                                             <ArrowRight className="size-4" />
                                         </Link>
                                     </Button>
                                     <Button size="lg" variant="outline" asChild className="px-6 text-base">
-                                        <a href="#como-funciona">Ver como funciona</a>
+                                        <a href="#whatsapp-pix">Ver cobrança no WhatsApp</a>
                                     </Button>
                                 </div>
 
-                                <div className="text-muted-foreground mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs lg:justify-start">
+                                <p className="text-muted-foreground mt-3 text-xs font-medium">
+                                    ⚡ Cadastro em 30 segundos · Sem pedir cartão · Seus registros são 100% privados
+                                </p>
+
+                                <div className="text-muted-foreground mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs lg:justify-start">
                                     <span className="flex items-center gap-1.5">
-                                        <Check className="text-primary size-3.5" /> Grátis para começar
+                                        <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" /> Comece grátis
                                     </span>
                                     <span className="flex items-center gap-1.5">
-                                        <Check className="text-primary size-3.5" /> Sem cartão de crédito
+                                        <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" /> Sem cartão de crédito
                                     </span>
                                     <span className="flex items-center gap-1.5">
-                                        <Check className="text-primary size-3.5" /> Feito para usar no celular
+                                        <Lock className="size-3.5 text-emerald-600 dark:text-emerald-400" /> Nunca cobra seus contatos sozinho
                                     </span>
                                 </div>
                             </div>
@@ -398,6 +450,123 @@ export default function Welcome() {
                                         </CardContent>
                                     </Card>
                                 ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Destaque WhatsApp & Pix (Fim do Constrangimento de Cobrar) */}
+                    <section id="whatsapp-pix" className="border-b py-16 sm:py-24">
+                        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+                            <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
+                                <div className="lg:col-span-7">
+                                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                        <MessageCircle className="size-3.5" />
+                                        <span>Fim do constrangimento de cobrar</span>
+                                    </div>
+
+                                    <h2 className="mt-4 text-2xl font-bold tracking-tight sm:text-4xl sm:leading-tight">
+                                        A pior parte de emprestar é a vergonha de cobrar.{' '}
+                                        <span className="text-emerald-600 dark:text-emerald-400">Nós resolvemos isso.</span>
+                                    </h2>
+
+                                    <p className="text-muted-foreground mt-4 text-base leading-relaxed sm:text-lg">
+                                        Chega de ficar pensando em como escrever uma mensagem sem parecer chato ou agressivo. O app gera na hora uma
+                                        mensagem amigável com a sua chave Pix Copia e Cola pronta.
+                                    </p>
+
+                                    <div className="mt-8 space-y-4">
+                                        <div className="flex items-start gap-3">
+                                            <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                                                <Check className="size-3.5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-semibold">Mensagem educada e no tom certo</p>
+                                                <p className="text-muted-foreground text-xs leading-relaxed">
+                                                    Texto descontraído, sem climão e sem parecer cobrança de banco. Mantém a amizade e traz seu
+                                                    dinheiro de volta.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3">
+                                            <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                                                <Check className="size-3.5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-semibold">Pix Copia e Cola automático</p>
+                                                <p className="text-muted-foreground text-xs leading-relaxed">
+                                                    Elimina a desculpa do "depois me manda a chave". O devedor só copia o código no WhatsApp e cola no
+                                                    app do banco em 5 segundos.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3">
+                                            <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                                                <ShieldCheck className="size-3.5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-semibold">Você no controle total (nada automático pelas suas costas)</p>
+                                                <p className="text-muted-foreground text-xs leading-relaxed">
+                                                    O sistema NUNCA envia mensagens por conta própria. Você visualiza o texto, edita se quiser e abre
+                                                    no seu próprio WhatsApp pessoal.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Mock WhatsApp Balloon */}
+                                <div className="lg:col-span-5">
+                                    <div className="bg-card rounded-2xl border p-5 shadow-lg">
+                                        <div className="flex items-center gap-3 border-b pb-3">
+                                            <div className="flex size-10 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+                                                LM
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-semibold">Lucas Mendes</p>
+                                                <p className="text-[11px] text-emerald-600 dark:text-emerald-400">online</p>
+                                            </div>
+                                            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                                WhatsApp
+                                            </span>
+                                        </div>
+
+                                        <div className="mt-4 flex flex-col gap-3">
+                                            <div className="text-foreground ml-auto max-w-[94%] rounded-2xl rounded-tr-xs border border-emerald-500/25 bg-emerald-500/10 p-3.5 text-xs shadow-xs dark:bg-emerald-950/40">
+                                                <p className="leading-relaxed">Fala Lucas, tudo bem por aí? 👋</p>
+                                                <p className="mt-2 leading-relaxed">
+                                                    Passando só pra te mandar o Pix daquela parcela do churrasco da turma que combinamos pra hoje (R$
+                                                    75,00).
+                                                </p>
+
+                                                <div className="bg-background/80 mt-3 rounded-lg border border-emerald-500/30 p-2.5">
+                                                    <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+                                                        Pix Copia e Cola
+                                                    </p>
+                                                    <p className="truncate font-mono text-[11px] text-emerald-700 dark:text-emerald-300">
+                                                        00020126580014br.gov.bcb.pix...
+                                                    </p>
+                                                </div>
+
+                                                <p className="text-muted-foreground mt-2 text-[11px]">
+                                                    Valeu demais meu amigo! Qualquer coisa me dá um toque aqui. 🤝
+                                                </p>
+
+                                                <div className="text-muted-foreground mt-2 flex items-center justify-end gap-1 text-[10px]">
+                                                    <span>14:32</span>
+                                                    <span className="font-bold text-emerald-600 dark:text-emerald-400">✓✓</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 rounded-xl border border-dashed border-emerald-500/40 bg-emerald-500/5 p-3 text-center">
+                                            <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                                                ✨ O app gera essa mensagem e você abre no WhatsApp com 1 toque
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -551,6 +720,46 @@ export default function Welcome() {
                         </div>
                     </section>
 
+                    {/* Perguntas Frequentes (FAQ) */}
+                    <section id="faq" className="border-b py-16 sm:py-24">
+                        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+                            <div className="mx-auto max-w-2xl text-center">
+                                <span className="bg-primary/10 text-primary inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold">
+                                    <HelpCircle className="size-3.5" /> Dúvidas Frequentes
+                                </span>
+                                <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">Tudo o que você precisa saber antes de começar</h2>
+                                <p className="text-muted-foreground mt-2 text-sm leading-relaxed sm:text-base">
+                                    Transparência total. Sem pegadinhas, sem taxas escondidas e sem complicação.
+                                </p>
+                            </div>
+
+                            <div className="mt-12 grid gap-6 md:grid-cols-2">
+                                {faqs.map((faq) => (
+                                    <div key={faq.question} className="bg-card rounded-xl border p-6 shadow-xs">
+                                        <h3 className="text-foreground text-base leading-snug font-semibold">{faq.question}</h3>
+                                        <p className="text-muted-foreground mt-3 text-sm leading-relaxed">{faq.answer}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="border-primary/20 bg-primary/5 mt-10 rounded-xl border p-6 text-center">
+                                <p className="text-foreground text-sm font-semibold">Ainda ficou com alguma dúvida antes de criar sua conta?</p>
+                                <p className="text-muted-foreground mt-1 text-xs">Nosso suporte responde você diretamente pelo WhatsApp.</p>
+                                <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
+                                    <a
+                                        href="https://wa.me/5531997760109?text=Ol%C3%A1%2C%20tenho%20uma%20d%C3%BAvida%20antes%20de%20criar%20minha%20conta%20no%20Quem%20me%20deve"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700"
+                                    >
+                                        <MessageCircle className="size-4" />
+                                        Tirar dúvida no WhatsApp (31) 99776-0109
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     {/* Contato & Suporte */}
                     <section id="contato" className="bg-muted/20 border-t py-16 sm:py-20">
                         <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -609,13 +818,16 @@ export default function Welcome() {
                                     organizada.
                                 </p>
                                 <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                                    <Button size="lg" asChild className="gap-2 px-8">
+                                    <Button size="lg" asChild className="gap-2 px-8 text-base shadow-md">
                                         <Link href={auth.user ? route('dashboard') : route('register')}>
                                             {auth.user ? 'Ir para o Dashboard' : 'Criar minha conta grátis'}
                                             <ArrowRight className="size-4" />
                                         </Link>
                                     </Button>
                                 </div>
+                                <p className="text-muted-foreground mt-4 text-xs">
+                                    ⚡ 100% grátis · Sem cartão de crédito · Seus registros são privados
+                                </p>
                             </div>
                         </div>
                     </section>
