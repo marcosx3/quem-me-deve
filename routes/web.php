@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // Webhook do AbacatePay (isento de CSRF em bootstrap/app.php)
-Route::post('api/webhooks/abacatepay', [AbacatePayWebhookController::class, 'handle'])->name('webhooks.abacatepay');
+Route::match(['get', 'post'], 'api/webhooks/abacatepay', [AbacatePayWebhookController::class, 'handle'])->name('webhooks.abacatepay');
 
 // Retorno do checkout
 Route::get('checkout/callback/{user}', [CheckoutController::class, 'callback'])->name('checkout.callback');

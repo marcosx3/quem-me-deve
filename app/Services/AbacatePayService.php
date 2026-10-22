@@ -22,8 +22,8 @@ class AbacatePayService
     public function __construct()
     {
         $this->apiKey = config('services.abacatepay.api_key') ?? '';
-        $this->proProductId = config('services.abacatepay.product_id') ?? 'prod_MsfgGB1LdBjnUjwneB4H3XEZ';
-        $this->premiumProductId = config('services.abacatepay.product_premium_id') ?? 'prod_5PjmF6ag3Fqkfuys3BqBT2XE';
+        $this->proProductId = config('services.abacatepay.product_id') ?? 'prod_L3sDWjMF0tnNfZb6ChFfQAAn';
+        $this->premiumProductId = config('services.abacatepay.product_premium_id') ?? 'prod_GETH4uGgSJBFSRsSeP4tgukG';
         $this->baseUrl = config('services.abacatepay.base_url') ?? 'https://api.abacatepay.com/v2';
         $this->webhookSecret = config('services.abacatepay.webhook_secret');
     }
@@ -46,20 +46,29 @@ class AbacatePayService
         $productId = $targetPlanId === 3 ? $this->premiumProductId : $this->proProductId;
 
         try {
+            $payload = [
+                'items' => [
+                    [
+                        'id' => $productId,
+                        'quantity' => 1,
+                    ],
+                ],
+                'methods' => ['PIX'],
+                'returnUrl' => route('profile.edit'),
+                'completionUrl' => route('checkout.callback', ['user' => $user->id, 'plan' => $targetPlanId]),
+                'externalId' => "user_{$user->id}_plan_{$targetPlanId}",
+            ];
+
+            if (! empty($user->email)) {
+                $payload['customer'] = [
+                    'name' => $user->name ?: 'Cliente',
+                    'email' => $user->email,
+                ];
+            }
+
             $response = Http::withToken($this->apiKey)
                 ->timeout(15)
-                ->post("{$this->baseUrl}/checkouts/create", [
-                    'items' => [
-                        [
-                            'id' => $productId,
-                            'quantity' => 1,
-                        ],
-                    ],
-                    'methods' => ['PIX'],
-                    'returnUrl' => route('profile.edit'),
-                    'completionUrl' => route('checkout.callback', ['user' => $user->id, 'plan' => $targetPlanId]),
-                    'externalId' => "user_{$user->id}_plan_{$targetPlanId}",
-                ]);
+                ->post("{$this->baseUrl}/checkouts/create", $payload);
 
             if ($response->successful() && $response->json('success')) {
                 return [

@@ -37,9 +37,9 @@ return [
 
     'abacatepay' => [
         'api_key' => env('ABACATEPAY_API_KEY'),
-        'product_id' => env('ABACATEPAY_PRODUCT_ID', 'prod_MsfgGB1LdBjnUjwneB4H3XEZ'),
-        'product_premium_id' => env('ABACATEPAY_PRODUCT_PREMIUM_ID', 'prod_5PjmF6ag3Fqkfuys3BqBT2XE'),
-        'webhook_secret' => env('ABACATEPAY_WEBHOOK_SECRET'),
+        'product_id' => env('ABACATEPAY_PRODUCT_ID', 'prod_L3sDWjMF0tnNfZb6ChFfQAAn'),
+        'product_premium_id' => env('ABACATEPAY_PRODUCT_PREMIUM_ID', 'prod_GETH4uGgSJBFSRsSeP4tgukG'),
+        'webhook_secret' => env('ABACATEPAY_WEBHOOK_SECRET', 'whsec_1d759538a66448519cc93134b893af9860a7dd49eab1a85c'),
         'base_url' => env('ABACATEPAY_BASE_URL', 'https://api.abacatepay.com/v2'),
     ],
 
