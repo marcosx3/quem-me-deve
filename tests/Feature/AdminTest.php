@@ -72,14 +72,4 @@ class AdminTest extends TestCase
         $response->assertRedirect();
         $this->assertEquals(3, $targetUser->fresh()->plan_id);
     }
-
-    public function test_track_page_views_middleware_logs_visit(): void
-    {
-        $this->get(route('home'));
-
-        $this->assertDatabaseHas('site_access_logs', [
-            'path' => '/',
-            'method' => 'GET',
-        ]);
-    }
 }

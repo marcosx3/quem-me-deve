@@ -4,6 +4,18 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <!-- Google tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-V5ZKK1846Q"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-V5ZKK1846Q');
+        </script>
+
+        <!-- Google Tag Manager -->
+        <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-KLJ4R5Q8"></script>
+
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <script>
@@ -25,6 +37,11 @@
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
+        <!-- Google Tag Manager (noscript) -->
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KLJ4R5Q8"
+        height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+        <!-- End Google Tag Manager (noscript) -->
+
         @inertia
     </body>
 </html>

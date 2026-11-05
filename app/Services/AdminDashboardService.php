@@ -6,18 +6,13 @@ use App\Models\Devedor;
 use App\Models\Divida;
 use App\Models\Parcela;
 use App\Models\Plan;
-use App\Models\SiteAccessLog;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
 class AdminDashboardService
 {
     public function getDashboardData(?string $search = null): array
     {
-        $now = now();
-        $startOfDay = $now->copy()->startOfDay();
-        $thirtyDaysAgo = $now->copy()->subDays(30);
-        $sevenDaysAgo = $now->copy()->subDays(7);
+        $thirtyDaysAgo = now()->subDays(30);
 
         // 1. Usuários e Planos
         $totalUsuarios = User::count();
@@ -38,48 +33,7 @@ class AdminDashboardService
         $volumeRecebido = (float) Parcela::where('status', 'paga')->sum('valor');
         $volumePendente = (float) Parcela::where('status', 'pendente')->sum('valor');
 
-        // 3. Analytics de Acessos
-        $acessosHoje = SiteAccessLog::where('created_at', '>=', $startOfDay)->count();
-        $acessos7d = SiteAccessLog::where('created_at', '>=', $sevenDaysAgo)->count();
-        $acessos30d = SiteAccessLog::where('created_at', '>=', $thirtyDaysAgo)->count();
-        $acessosTotal = SiteAccessLog::count();
-        $visitantesUnicos30d = SiteAccessLog::where('created_at', '>=', $thirtyDaysAgo)
-            ->distinct('ip_hash')
-            ->count('ip_hash');
-
-        // Top 6 páginas mais visitadas nos últimos 30 dias
-        $topPaginas = SiteAccessLog::where('created_at', '>=', $thirtyDaysAgo)
-            ->select('path', DB::raw('count(*) as total'))
-            ->groupBy('path')
-            ->orderByDesc('total')
-            ->limit(6)
-            ->get()
-            ->map(fn ($p) => [
-                'path' => $p->path,
-                'total' => (int) $p->total,
-            ])
-            ->all();
-
-        // Histórico de acessos dos últimos 14 dias (para gráfico/histograma)
-        $acessosPorDia = [];
-        for ($i = 13; $i >= 0; $i--) {
-            $diaInicio = $now->copy()->subDays($i)->startOfDay();
-            $diaFim = $now->copy()->subDays($i)->endOfDay();
-
-            $totalDia = SiteAccessLog::whereBetween('created_at', [$diaInicio, $diaFim])->count();
-            $unicosDia = SiteAccessLog::whereBetween('created_at', [$diaInicio, $diaFim])
-                ->distinct('ip_hash')
-                ->count('ip_hash');
-
-            $acessosPorDia[] = [
-                'data' => $diaInicio->format('d/m'),
-                'dia_semana' => $diaInicio->translatedFormat('D'),
-                'total' => $totalDia,
-                'unicos' => $unicosDia,
-            ];
-        }
-
-        // 4. Listagem de Usuários com busca
+        // 3. Listagem de Usuários com busca
         $usersQuery = User::with('plan')
             ->withCount(['devedores', 'dividas'])
             ->withSum('dividas as volume_dividas', 'valor_total')
@@ -132,15 +86,6 @@ class AdminDashboardService
                     'volume_total_dividas' => $volumeTotalDividas,
                     'volume_recebido' => $volumeRecebido,
                     'volume_pendente' => $volumePendente,
-                ],
-                'analytics' => [
-                    'hoje' => $acessosHoje,
-                    'ultimos_7d' => $acessos7d,
-                    'ultimos_30d' => $acessos30d,
-                    'total' => $acessosTotal,
-                    'visitantes_unicos_30d' => $visitantesUnicos30d,
-                    'top_paginas' => $topPaginas,
-                    'grafico_14_dias' => $acessosPorDia,
                 ],
             ],
             'usuarios' => $usuarios,
